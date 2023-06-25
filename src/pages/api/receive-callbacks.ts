@@ -17,35 +17,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             for (let index = 0; index < receivedTxn.length; index++) {
                 const action: txnAction = receivedTxn[index];
-                if (action.type === 'NFT_TRANSFER') {
-                    const current_nft: string = action.info.nft_address ?? '';
-                    const getNftDetails: any = await supabase
-                        .from('monitor_mints')
-                        .select()
-                        .eq('mint_address', current_nft);
+                const current_nft: string = action.info.nft_address ?? '';
+                const getNftDetails: any = await supabase
+                    .from('monitor_mints')
+                    .select()
+                    .eq('mint_address', current_nft);
 
-                    if (getNftDetails.data === null || getNftDetails.error !== null)
-                        throw new Error('NFT_RECORD_NOT_FOUND');
+                if (getNftDetails.data === null || getNftDetails.error !== null)
+                    throw new Error('NFT_RECORD_NOT_FOUND');
 
-                    const newOwner = action.info.receiver ?? '';
-                    if (newOwner !== getNftDetails.current_owner) {
-                        const updatedOwnerDetails = {
-                            ...getNftDetails,
-                            current_owner: newOwner,
-                        };
+                var newOwner: string = '';
 
-                        const insertToDb = await supabase.from('monitor_mints').upsert(updatedOwnerDetails);
+                if (action.type === 'NFT_TRANSFER') 
+                    newOwner = action.info.receiver ?? '';
+                 else if (action.type === 'NFT_SALE') 
+                    newOwner = action.info.buyer ?? '';
+                else if (action.type === 'NFT_BURN') 
+                    newOwner = "";
 
-                        if (insertToDb.error) throw new Error('UPSERT_ERROR_OCCURED');
+                if (newOwner !== getNftDetails.current_owner) {
+                    const updatedOwnerDetails = {
+                        ...getNftDetails,
+                        current_owner: newOwner,
+                    };
 
-                        console.log(`Owner Updated for ${current_nft}`);
-                    }
+                    const insertToDb = await supabase.from('monitor_mints').upsert(updatedOwnerDetails);
+
+                    if (insertToDb.error)
+                        throw new Error('UPSERT_ERROR_OCCURED');
+
+                    console.log(`Owner Updated for ${current_nft}`);
                 }
             }
 
             res.status(200).json({ status: 'ok' });
         } catch (error: any) {
-            console.log('Some error occ');
+            if (error.message === "NFT_RECORD_NOT_FOUND")
+                console.log("NFT Record not available in records");
+            else if (error.message === "UPSERT_ERROR_OCCURED")
+                console.log("Database not updated");
+            else
+                console.log("Internal Server Error");
         }
     }
 }

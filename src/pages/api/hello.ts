@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             var reference_address: string = '';
             var addresses_to_monitor: string[] = [];
 
-            reference_address = (typeof req.body.reference_address === "string")?req.body.reference_address:'';
-            addresses_to_monitor = Array.isArray(req.body.create_callbacks_on)?req.body.create_callbacks_on:[];
+            reference_address = (typeof req.body.reference_address === "string") ? req.body.reference_address : '';
+            addresses_to_monitor = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
 
 
             if (reference_address && addresses_to_monitor.length) {
@@ -39,17 +39,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
                     callbackUrl: '',
                 });
-                
-                if(!callbackCreate.hasOwnProperty("id"))
+
+                if (!callbackCreate.hasOwnProperty("id"))
                     throw new Error('CALLBACK_NOT_CREATED');
-                
+
                 const insertToDb = await supabase.from('callback_details').insert({
                     reference_address: reference_address,
                 });
 
-                if (insertToDb.error !== null) 
+                if (insertToDb.error !== null)
                     throw new Error('INSERT_TO_DB_FAILED');
-                
+
                 console.log('All Operations Complete');
                 response = {
                     success: true,
@@ -57,11 +57,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     result: {},
                 };
                 statusCode = 200;
-                
+
             } else {
                 throw new Error('WRONG_PARAM');
             }
-        } catch (error:any) {
+        } catch (error: any) {
             if (error.message === 'WRONG_PARAM') {
                 response = {
                     success: false,
@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 };
                 statusCode = 400;
             }
-            else if (error.message === 'CALLBACK_NOT_CREATED'){
+            else if (error.message === 'CALLBACK_NOT_CREATED') {
                 response = {
                     success: false,
                     message: 'Error Monitoring the addresses',
@@ -78,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 };
                 statusCode = 403;
             }
-            else if (error.message === 'INSERT_TO_DB_FAILED'){
+            else if (error.message === 'INSERT_TO_DB_FAILED') {
                 response = {
                     success: false,
                     message: 'Error Updating the DB',
@@ -86,8 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 };
                 statusCode = 403;
             }
-            else
-            {
+            else {
                 response = {
                     success: false,
                     message: 'Internal Server Error',
@@ -105,4 +104,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             result: {},
         });
     }
+}
+
+async function pushMintsToDatabase(reference_address: string, addresses_to_monitor: [], network: string) {
+    try {
+        if (reference_address && addresses_to_monitor.length && network) {
+            const nftOwners = await shyftClient.nft.getOwners({ network: Network.Devnet, mints: addresses_to_monitor });
+            console.log(nftOwners);
+            if (nftOwners.length === 0)
+                throw new Error('NO_NFT_DATA');
+
+            const allOwners: object[] = nftOwners;
+            // const allOwners:object[] = [];
+            for (var i = 0; i < allOwners.length; i++) {
+                const eachOwner: any = allOwners[i];
+                //fetch NFT metadata here
+                const insertToDb = await supabase.from('monitor_mints').upsert({
+                    mint_address: eachOwner.nft_address,
+                    current_holder: eachOwner.owner
+                });
+                if (insertToDb.error !== null)
+                    throw new Error('INSERT_TO_DB_FAILED');
+            }
+            return true;
+        }
+    } catch (error:any) {
+        if(error.message === "NO_NFT_DATA")
+            console.log("NFT not found in DB");
+        else if(error.message === "INSERT_TO_DB_FAILED")
+            console.log("Could not insert data to database");
+        return false;
+    }
+
 }
