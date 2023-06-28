@@ -1,10 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import { ShyftSdk, Network, CandyMachineProgram } from '@shyft-to/js';
-
-const supabaseUrl = process.env.NEXT_SUPABASE_DB_URL ?? '';
-const supabaseKey = process.env.NEXT_SUPABASE_DB_KEY ?? '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 const shyftClient = new ShyftSdk({ apiKey: process.env.NEXT_SHYFT_API_KEY ?? '', network: Network.Mainnet });
 
@@ -23,7 +18,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
 
         var shyftNetwork:Network = Network.Mainnet;
-
         if(network === "mainnet-beta")
             shyftNetwork = Network.Mainnet;
         else if(network === "devnet")
@@ -35,33 +29,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         
         var cm_mints:any[] = [];
 
-        const getMintsFromCandyMachine = await shyftClient.candyMachine.readNfts({
+        const getMintsFromCandyMachine:string[] = await shyftClient.candyMachine.readMints({
             network: shyftNetwork,
             address: cm_address,
             version: CandyMachineProgram.V3
         });
-
-        if(getMintsFromCandyMachine.nfts?.length > 0){
-            for (let index = 0; index < getMintsFromCandyMachine.nfts.length; index++) {
-                const nft = getMintsFromCandyMachine.nfts[index];
+        
+        if(getMintsFromCandyMachine.length > 0){
+            for (let index = 0; index < getMintsFromCandyMachine.length; index++) {
+                const nft = getMintsFromCandyMachine[index];
                 cm_mints.push(nft);
-                
-                var objectToBePushed = {};
 
-                const mintExists = await supabase
-                    .from('monitor_mints')
-                    .select()
-                    .eq("mint_address",nft.mint);
-                
-                if(mintExists.count !== null)
-                    objectToBePushed = mintExists.data[0];
-
-                objectToBePushed ={ ...objectToBePushed, mint_address: nft.mint, current_holder: nft.owner};
-
-                 //get from DB then push
-                const insertToDb = await supabase.from('monitor_mints').upsert(objectToBePushed);
-                if (insertToDb.error !== null)
-                    throw new Error('INSERT_TO_DB_FAILED');
             }
         }
         else
@@ -73,20 +51,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             result: cm_mints
         }); 
 
-    } catch (error:any) {
-        if(error.message === "WRONG_NETWORK")
+    } catch (error: any) {
+        
+        if(error === "WRONG_NETWORK")
             res.status(400).json({
                 success: false,
                 message: "Invalid Network",
                 result: []
             });
-        else if(error.message === "INSERT_TO_DB_FAILED")
-            res.status(400).json({
-                success: false,
-                message: "Could not insert to DB",
-                result: []
-            });
-        else if(error.message === "NO_NFTS_IN_CM")
+        else if(error === "NO_NFTS_IN_CM")
             res.status(404).json({
                 success: false,
                 message: "No Nfts found in CM",
@@ -100,3 +73,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             }); 
     }
 }
+
+// async function pushNftDataToDatabase(reference_address: string, addresses_to_monitor: string[], network: Network):Promise<boolean> {
+//     try {
+//         if(addresses_to_monitor.length > 0)
+//         {
+//                 // var objectToBePushed = {};
+
+//                 // const mintExists = await supabase
+//                 //     .from('monitor_mints')
+//                 //     .select()
+//                 //     .eq("mint_address",nft.mint);
+                
+//                 // if(mintExists.count !== null)
+//                 //     objectToBePushed = mintExists.data[0];
+
+//                 // objectToBePushed ={ ...objectToBePushed, mint_address: nft.mint, current_holder: nft.owner};
+
+//                 //  //get from DB then push
+//                 // const insertToDb = await supabase.from('monitor_mints').upsert(objectToBePushed);
+//                 // if (insertToDb.error !== null)
+//                 //     throw new Error('INSERT_TO_DB_FAILED');
+//         }
+//         else
+//         {
+//             return false;
+//         }
+//         return true;
+//     } catch (error:any) {
+//         console.log(error);
+//         return false;
+//     }
+// }
