@@ -2,10 +2,26 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Image from 'next/image';
-import React from 'react';
+// import React from 'react';
 import styles from '../styles/Home.module.css';
+import {useState} from 'react';
+
+import {
+    Container,
+    Heading,
+    Text,
+    Flex,
+    Square,
+    Center,
+    FormControl,
+    FormLabel,
+    FormErrorMessage,
+    FormHelperText,
+    Input
+} from '@chakra-ui/react';
 
 const Home: NextPage = () => {
+    const [first, setfirst] = useState("");
     return (
         <div className={styles.container}>
             <Head>
@@ -14,16 +30,30 @@ const Home: NextPage = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <main className={styles.main}>
+            {/* <main className={styles.main}>
                 <h1 className={styles.title}>
                     Welcome to <a href="https://nextjs.org">Next.js!</a>
                 </h1>
 
                
-            </main>
+            </main> */}
+            <Container maxW='6xl' bg='#565656' color='white'>
+                <Center>
+                    <Flex>
+                        <Square padding={"4px 20px"} >
+                            <FormControl>
+                                <Input type='text' placeholder={`Enter Candy Machine Address`} width={"300px"}/>
+                            </FormControl>
+                        </Square>
+                        <Square padding={"4px 20px"} bg='tomato'>
+                            <Heading>Hellow</Heading>
+                        </Square>
+
+                    </Flex>
+                </Center>
+            </Container>
 
             <footer className={styles.footer}>
-                
                     Powered by Calyptus and SHYFT
             </footer>
         </div>
