@@ -4,7 +4,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 // import React from 'react';
 import styles from '../styles/Home.module.css';
-import {useState} from 'react';
+import { useState } from 'react';
 
 import {
     Container,
@@ -17,11 +17,15 @@ import {
     FormLabel,
     FormErrorMessage,
     FormHelperText,
-    Input
+    Select,
+    Input,
+    Button,
+    Stack
 } from '@chakra-ui/react';
 
 const Home: NextPage = () => {
-    const [first, setfirst] = useState("");
+    const [address, setAddress] = useState('');
+    const [network, setNetwork] = useState('mainnet-beta');
     return (
         <div className={styles.container}>
             <Head>
@@ -37,25 +41,66 @@ const Home: NextPage = () => {
 
                
             </main> */}
-            <Container maxW='6xl' bg='#565656' color='white'>
-                <Center>
-                    <Flex>
-                        <Square padding={"4px 20px"} >
+            <Container maxW="6xl" bg="#565656" color="white">
+                <Flex align={'center'} justify={'center'} bg={'gray.50'}>
+                    <Container
+                        maxW={'5xl'}
+                        bg={'whiteAlpha.100'}
+                        boxShadow={'xl'}
+                        rounded={'lg'}
+                        p={6}
+                        flexDirection={'column'}
+                    >
+                        
+                        <Stack
+                            direction={{ base: 'column', md: 'row' }}
+                            as={'form'}
+                            spacing={'12px'}
+                        >
                             <FormControl>
-                                <Input type='text' placeholder={`Enter Candy Machine Address`} width={"300px"}/>
+                                <Input
+                                    variant={'solid'}
+                                    borderWidth={1}
+                                    color={'gray.800'}
+                                    _placeholder={{
+                                        color: 'gray.400',
+                                    }}
+                                    borderColor={'gray.300'}
+                                    id={'email'}
+                                    type={'text'}
+                                    placeholder={'Enter Collection Address'}
+                                    aria-label={'Enter Collection Address'}
+                                    
+                                />
                             </FormControl>
-                        </Square>
-                        <Square padding={"4px 20px"} bg='tomato'>
-                            <Heading>Hellow</Heading>
-                        </Square>
-
-                    </Flex>
-                </Center>
+                            <FormControl w={{ base: '100%', md: '40%' }}>
+                                <Select>
+                                    <option value='devnet'>devnet</option>
+                                    <option value='testnet'>testnet</option>
+                                    <option value='mainnet-beta'>mainnet</option>
+                                </Select>
+                            </FormControl>
+                            <FormControl w={{ base: '100%', md: '40%' }}>
+                                <Button
+                                    colorScheme={'blue'}
+                                    
+                                    w="100%"
+                                    type={'submit'}
+                                >
+                                    Submit
+                                </Button>
+                            </FormControl>
+                        </Stack>
+                        {/* <Text mt={2} textAlign={'center'} color={error ? 'red.500' : 'gray.500'}>
+                            {error
+                                ? 'Oh no an error occured! 😢 Please try again later.'
+                                : "You won't receive any spam! ✌️"}
+                        </Text> */}
+                    </Container>
+                </Flex>
             </Container>
 
-            <footer className={styles.footer}>
-                    Powered by Calyptus and SHYFT
-            </footer>
+            <footer className={styles.footer}>Powered by Calyptus and SHYFT</footer>
         </div>
     );
 };
