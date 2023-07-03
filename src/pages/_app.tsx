@@ -1,3 +1,8 @@
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/poppins/400.css";
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -6,12 +11,18 @@ import { clusterApiUrl } from '@solana/web3.js';
 import type { AppProps } from 'next/app';
 import type { FC } from 'react';
 import React, { useMemo } from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
-import { theme } from "../components/Theme";
+import { ChakraProvider,extendTheme } from '@chakra-ui/react';
 
 // Use require instead of import since order matters
 require('@solana/wallet-adapter-react-ui/styles.css');
 require('../styles/globals.css');
+
+const fonts = {
+    heading: `'Inter', sans-serif`,
+    body: `'Poppins', sans-serif`,
+    customHeading: `'Inter', sans-serif`
+  };
+const theme = extendTheme({fonts});
 
 const App: FC<AppProps> = ({ Component, pageProps }) => {
     // Can be set to 'devnet', 'testnet', or 'mainnet-beta'

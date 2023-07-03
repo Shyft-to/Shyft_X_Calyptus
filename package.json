@@ -33,10 +33,13 @@
         "lint": "prettier --check 'src/{*,**/*}.{ts,tsx,js,jsx,json}' && eslint && next lint"
     },
     "dependencies": {
+        "@chakra-ui/icons": "^2.0.19",
         "@chakra-ui/next-js": "^2.1.4",
         "@chakra-ui/react": "^2.7.1",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
+        "@fontsource/inter": "^5.0.3",
+        "@fontsource/poppins": "^5.0.3",
         "@shyft-to/js": "^0.2.15",
         "@solana/wallet-adapter-base": "^0.9.9",
         "@solana/wallet-adapter-react": "^0.15.8",
