@@ -40,11 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             throw Error("WRONG_ADDR");
         }
         
-        console.log("here2.1");
-        console.log(getMintsFromCandyMachine);
-        console.log("here3");
+        // console.log("here2.1");
+        // console.log(getMintsFromCandyMachine);
+        // console.log("here3");
         if(getMintsFromCandyMachine && getMintsFromCandyMachine.length > 0){
-            console.log("here4");
             for (let index = 0; index < getMintsFromCandyMachine.length; index++) {
                 const nft = getMintsFromCandyMachine[index];
                 cm_mints.push(nft);
@@ -62,24 +61,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     } catch (error: any) {
         console.log(error);
-        // if(error.message === "WRONG_NETWORK")
-        //     res.status(400).json({
-        //         success: false,
-        //         message: "Invalid Network",
-        //         result: []
-        //     });
-        // else if(error.message === "NO_NFTS_IN_CM")
-        //     res.status(404).json({
-        //         success: false,
-        //         message: "No Nfts found in CM",
-        //         result: []
-        //     });
-        // else
-        //     res.status(500).json({
-        //         success: false,
-        //         message: "Internal Server Error",
-        //         result: []
-        //     }); 
         res.status(500).json({
             success: false,
             message: "Test",

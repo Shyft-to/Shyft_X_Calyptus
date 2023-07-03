@@ -40,7 +40,7 @@
         "@emotion/styled": "^11.11.0",
         "@fontsource/inter": "^5.0.3",
         "@fontsource/poppins": "^5.0.3",
-        "@shyft-to/js": "^0.2.15",
+        "@shyft-to/js": "^0.2.16",
         "@solana/wallet-adapter-base": "^0.9.9",
         "@solana/wallet-adapter-react": "^0.15.8",
         "@solana/wallet-adapter-react-ui": "^0.9.10",

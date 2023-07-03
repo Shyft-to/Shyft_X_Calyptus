@@ -5,6 +5,7 @@ import Image from 'next/image';
 // import React from 'react';
 import styles from '../styles/Home.module.css';
 import { useState } from 'react';
+import axios from 'axios';
 
 import {
     Container,
@@ -24,6 +25,46 @@ import WithSubnavigation from '../components/Navbar';
 const Home: NextPage = () => {
     const [address, setAddress] = useState('');
     const [network, setNetwork] = useState('mainnet-beta');
+    const [nfts,setNfts] = useState<any[]>([]);
+    const [opsComplete,setOpsComplete] = useState<boolean>(false);
+
+    const setUpMonitors = async (address:string,network:string) => {
+        var mintList:any[] = [];
+
+        await axios.request({
+            url: '/api/candymachine-update-owners',
+            method: "POST",
+            data: {
+                cm_address: address,
+                network: network
+            }
+        })
+        .then(res => {
+            if(res.data.success)
+                mintList = res.data.result ?? [];
+        })
+        .catch(err => console.log(err));
+
+        console.log("Function complete: ",mintList);
+        await new Promise(r => setTimeout(r, 2000));
+        await axios.request({
+            url: '/api/update-mints',
+            method: "POST",
+            data: {
+                reference_address: address,
+                create_callbacks_on: mintList,
+                network: network
+            }
+        })
+        .then(res => {
+            if(res.data.success)
+                setOpsComplete(true);
+        })
+        .catch(err => console.log(err));
+
+    }
+     
+    
     return (
         <div className={styles.container}>
             <Head>
@@ -65,18 +106,20 @@ const Home: NextPage = () => {
                                         type={'text'}
                                         placeholder={'Enter Collection Address'}
                                         aria-label={'Enter Collection Address'}
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
                                     />
                                 </FormControl>
                                 <FormControl w={{ base: '100%', md: '30%' }}>
-                                    <Select>
+                                    <Select onChange={(e) => setNetwork(e.target.value)}>
                                         <option value="devnet">devnet</option>
                                         <option value="testnet">testnet</option>
                                         <option value="mainnet-beta">mainnet</option>
                                     </Select>
                                 </FormControl>
                                 <FormControl w={{ base: '100%', md: '30%' }}>
-                                    <Button colorScheme={"gray"} w="100%" type={'submit'}>
-                                        Submit
+                                    <Button colorScheme={"gray"} w="100%" type={'button'} onClick={() => setUpMonitors(address,network)}>
+                                        Search
                                     </Button>
                                 </FormControl>
                             </Stack>
@@ -108,7 +151,7 @@ const Home: NextPage = () => {
                             {/* <TabIndicator mt="-1.5px" height="2px" bg="purple.700" borderRadius="1px" /> */}
                             <TabPanels>
                                 <TabPanel>
-                                    <NftList />
+                                    <NftList address={address} network={network}/>
                                 </TabPanel>
                                 <TabPanel>
                                     <p>two!</p>
