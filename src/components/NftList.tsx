@@ -3,7 +3,8 @@ import { useState,useEffect } from 'react';
 import axios from 'axios';
 type paramType = {
     address: string,
-    network: string
+    network: string,
+    setAllData: any
 }
 const IMAGE =
   'https://images.unsplash.com/photo-1518051870910-a46e30d9db16?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=1350&q=80';
@@ -21,10 +22,10 @@ const NftList = (props: paramType) => {
             "ngrok-skip-browser-warning": "69420"
             },
             data: {
-                // address:props.address,
-                // network:props.network,
-                address:"CqvtCFJT7pLRH1FigAQ2HzzdXNzUcYTuXdV5L4E6zaHU",
-                network:'devnet',
+                address:props.address,
+                network:props.network,
+                // address:"CqvtCFJT7pLRH1FigAQ2HzzdXNzUcYTuXdV5L4E6zaHU",
+                // network:'devnet',
             }
         })
         // Handle the response from backend here
@@ -34,6 +35,7 @@ const NftList = (props: paramType) => {
             if(res.data.success === true)
             {
                 setNfts(res.data.result);
+                props.setAllData(res.data.result);
             }
             
         })
