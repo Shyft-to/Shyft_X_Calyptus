@@ -7,8 +7,8 @@ const OwnerList = (props:paramType) => {
     return ( 
         <div>
             <Flex color='white' flexWrap={"wrap"} justifyContent={"space-around"} mb={1}>
-                <Box flex='1' bg={"white"} color={"pink.800"} border={"1px"} padding={2}>
-                    <Center>Name</Center>
+                <Box flex='1' bg={"white"} border={"1px"} padding={2}>
+                    <Center color={"pink.600"} fontWeight={600} fontFamily={'customHeading'}>Name</Center>
                 </Box>
                 <Box flex='1' bg={"white"} color={"pink.800"} border={"1px"} padding={2}>
                     <Center>Address</Center>   

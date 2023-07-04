@@ -48,11 +48,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             else
                 throw new Error("WRONG_NETWORK");
 
-            console.log("ref_address: ",reference_address);
-            console.log("addresses_to_monitor: ",addresses_to_monitor);
+            // console.log("ref_address: ",reference_address);
+            // console.log("addresses_to_monitor: ",addresses_to_monitor);
 
             if (reference_address && addresses_to_monitor.length && network) {
-                console.dir(addresses_to_monitor,{depth:null});
+                // console.dir(addresses_to_monitor,{depth:null});
                 
                 // const nftOwners = await shyftClient.nft.getOwners({network:shyftNetwork,mints:addresses_to_monitor});
                 
@@ -75,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 // }
                 for(var i = 0; i < addresses_to_monitor.length; i++)
                 {
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 500)); //use this if you have a rate limited API key
                     const eachMint:string = addresses_to_monitor[i];
                     
                     var objectToBePushed = {};
@@ -84,7 +84,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                         .select()
                         .eq("mint_address",eachMint);
                     
-                    if(mintExists.count !== null)
+                    if(mintExists.error !== null)
+                        throw new Error("COULD_NOT_GET_FROM_DB");
+                    
+                    if(mintExists.data.length > 0)
                         objectToBePushed = mintExists.data[0];
                     
                     const currentNftData: any = await shyftClient.nft.getNftByMint({
@@ -97,9 +100,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                         mint_address: currentNftData.mint,
                         current_holder: currentNftData.owner,
                         nft_data: currentNftData,
-                        reference_address: reference_address
+                        reference_address: reference_address,
+                        network:network
                     };
-
+                    
                     // get from DB then push
                     const insertToDb = await supabase.from('monitor_mints').upsert(objectToBePushed);
                     if (insertToDb.error !== null)

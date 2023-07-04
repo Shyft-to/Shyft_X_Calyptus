@@ -6,44 +6,47 @@ type paramType = {
     network: string,
     setAllData: any
 }
-const IMAGE =
-  'https://images.unsplash.com/photo-1518051870910-a46e30d9db16?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=1350&q=80';
+
 const NftList = (props: paramType) => {
     const [nfts,setNfts] = useState([]);
     const [loading,setLoading] = useState<'unloaded'| 'loading' | 'loaded'>('unloaded');
     useEffect(() => {
-        setLoading('loading');
-        axios({
-            // Endpoint to get NFTs
-            url: '/api/get-all-data',
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "69420"
-            },
-            data: {
-                address:props.address,
-                network:props.network,
-                // address:"CqvtCFJT7pLRH1FigAQ2HzzdXNzUcYTuXdV5L4E6zaHU",
-                // network:'devnet',
-            }
-        })
-        // Handle the response from backend here
-        .then((res) => {
-            setLoading('loaded');
-            console.log(res.data.success);
-            if(res.data.success === true)
-            {
-                setNfts(res.data.result);
-                props.setAllData(res.data.result);
-            }
-            
-        })
-        // Catch errors if any
-        .catch((err) => {
-            console.warn(err);
-            
-        });
+        if(props.address && props.network)
+        {
+            setLoading('loading');
+            axios({
+                // Endpoint to get NFTs
+                url: '/api/get-all-data',
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "69420"
+                },
+                data: {
+                    address:props.address,
+                    network:props.network,
+                    // address:"CqvtCFJT7pLRH1FigAQ2HzzdXNzUcYTuXdV5L4E6zaHU",
+                    // network:'devnet',
+                }
+            })
+            // Handle the response from backend here
+            .then((res) => {
+                setLoading('loaded');
+                console.log(res.data.success);
+                if(res.data.success === true)
+                {
+                    setNfts(res.data.result);
+                    props.setAllData(res.data.result);
+                }
+                
+            })
+            // Catch errors if any
+            .catch((err) => {
+                console.warn(err);
+                
+            });
+        }
+        
     
       
     }, [props.address,props.network])

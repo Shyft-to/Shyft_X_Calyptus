@@ -12,6 +12,17 @@ type Responses = {
     message: string;
     result: {};
 };
+// type DbData = {
+//     id?: number,
+//     created_at?: any,
+//     reference_address?: string,
+//     monitor_addresses?: {
+//         addresses: []
+//     },
+//     callback_id?:string,
+//     network?:string
+// };
+
 const shyftClient = new ShyftSdk({ apiKey: process.env.NEXT_SHYFT_API_KEY ?? '', network: Network.Mainnet });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Responses>) {
@@ -24,28 +35,78 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         var statusCode = 0;
         try {
             console.log('------------Hello Called--------------');
-            console.log(req.body);
+            // console.log(req.body);
             var reference_address: string = '';
             var addresses_to_monitor: string[] = [];
+            var network:string = '';
 
             reference_address = (typeof req.body.reference_address === "string") ? req.body.reference_address : '';
             addresses_to_monitor = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
+            network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
+
+            var shyftNetwork:Network = Network.Mainnet;
+            if(network === "mainnet-beta")
+                shyftNetwork = Network.Mainnet;
+            else if(network === "devnet")
+                shyftNetwork = Network.Devnet;
+            else if(network === "testnet")
+                shyftNetwork = Network.Testnet;
+            else
+                throw new Error("WRONG_NETWORK")
 
 
             if (reference_address && addresses_to_monitor.length) {
-                const callbackCreate = await shyftClient.callback.register({
-                    network: Network.Mainnet,
-                    addresses: addresses_to_monitor,
-                    events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
-                    callbackUrl: '',
-                });
+                var callback_details_to_push:any = {}; 
+                
+                const callbackExists = await supabase
+                        .from('callback_details')
+                        .select()
+                        .eq("reference_address",reference_address)
+                        .match({
+                            network: network,
+                        });
+                
+                if(callbackExists.error !== null)
+                    throw new Error("COULD_NOT_GET_CBDATA");
+                
+                if(callbackExists.data?.length > 0)
+                {
+                    callback_details_to_push = callbackExists.data[0];
 
-                if (!callbackCreate.hasOwnProperty("id"))
-                    throw new Error('CALLBACK_NOT_CREATED');
+                    const callbackModify = await shyftClient.callback.update({
+                        id: callback_details_to_push.callback_id,
+                        addresses: addresses_to_monitor,
+                        callbackUrl:"https://a8f7-2405-201-8010-50c5-f58a-9cfc-5a13-f16e.ngrok-free.app/api/receive-callbacks",
+                        events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE]
+                    });
+                    if (!(callbackModify.hasOwnProperty("id")))
+                        throw new Error('CALLBACK_NOT_CREATED');
 
-                const insertToDb = await supabase.from('callback_details').insert({
-                    reference_address: reference_address,
-                });
+                    callback_details_to_push = {...callback_details_to_push,monitor_addresses:{addresses:addresses_to_monitor}};
+
+                }
+                else
+                {
+                    
+                    const callbackCreate = await shyftClient.callback.register({
+                        network: shyftNetwork,
+                        addresses: addresses_to_monitor,
+                        events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
+                        callbackUrl: "https://a8f7-2405-201-8010-50c5-f58a-9cfc-5a13-f16e.ngrok-free.app/api/receive-callbacks",
+                    });
+    
+                    if (!callbackCreate.hasOwnProperty("id"))
+                        throw new Error('CALLBACK_NOT_CREATED');
+                    
+                    callback_details_to_push = {
+                        reference_address: reference_address,
+                        monitor_addresses: {addresses:addresses_to_monitor},
+                        callback_id: callbackCreate.id,
+                        network: network
+                    }
+                }
+
+                const insertToDb = await supabase.from('callback_details').upsert(callback_details_to_push);
 
                 if (insertToDb.error !== null)
                     throw new Error('INSERT_TO_DB_FAILED');
@@ -86,6 +147,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 };
                 statusCode = 403;
             }
+            else if (error.message === 'COULD_NOT_GET_CBDATA') {
+                response = {
+                    success: false,
+                    message: 'Database unavailable',
+                    result: {},
+                };
+                statusCode = 503;
+            }
             else {
                 response = {
                     success: false,
@@ -106,34 +175,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 }
 
-async function pushMintsToDatabase(reference_address: string, addresses_to_monitor: [], network: string) {
-    try {
-        if (reference_address && addresses_to_monitor.length && network) {
-            const nftOwners = await shyftClient.nft.getOwners({ network: Network.Devnet, mints: addresses_to_monitor });
-            console.log(nftOwners);
-            if (nftOwners.length === 0)
-                throw new Error('NO_NFT_DATA');
+// async function pushMintsToDatabase(reference_address: string, addresses_to_monitor: [], network: string) {
+//     try {
+//         if (reference_address && addresses_to_monitor.length && network) {
+//             const nftOwners = await shyftClient.nft.getOwners({ network: Network.Devnet, mints: addresses_to_monitor });
+//             console.log(nftOwners);
+//             if (nftOwners.length === 0)
+//                 throw new Error('NO_NFT_DATA');
 
-            const allOwners: object[] = nftOwners;
-            // const allOwners:object[] = [];
-            for (var i = 0; i < allOwners.length; i++) {
-                const eachOwner: any = allOwners[i];
-                //fetch NFT metadata here
-                const insertToDb = await supabase.from('monitor_mints').upsert({
-                    mint_address: eachOwner.nft_address,
-                    current_holder: eachOwner.owner
-                });
-                if (insertToDb.error !== null)
-                    throw new Error('INSERT_TO_DB_FAILED');
-            }
-            return true;
-        }
-    } catch (error:any) {
-        if(error.message === "NO_NFT_DATA")
-            console.log("NFT not found in DB");
-        else if(error.message === "INSERT_TO_DB_FAILED")
-            console.log("Could not insert data to database");
-        return false;
-    }
+//             const allOwners: object[] = nftOwners;
+//             // const allOwners:object[] = [];
+//             for (var i = 0; i < allOwners.length; i++) {
+//                 const eachOwner: any = allOwners[i];
+//                 //fetch NFT metadata here
+//                 const insertToDb = await supabase.from('monitor_mints').upsert({
+//                     mint_address: eachOwner.nft_address,
+//                     current_holder: eachOwner.owner
+//                 });
+//                 if (insertToDb.error !== null)
+//                     throw new Error('INSERT_TO_DB_FAILED');
+//             }
+//             return true;
+//         }
+//     } catch (error:any) {
+//         if(error.message === "NO_NFT_DATA")
+//             console.log("NFT not found in DB");
+//         else if(error.message === "INSERT_TO_DB_FAILED")
+//             console.log("Could not insert data to database");
+//         return false;
+//     }
 
-}
+// }
