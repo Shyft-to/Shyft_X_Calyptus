@@ -22,12 +22,13 @@ import {
 import NftList from '../components/NftList';
 import WithSubnavigation from '../components/Navbar';
 import OwnerList from '../components/OwnerList';
+import Airdrop from '../components/Airdrop';
 
 const Home: NextPage = () => {
     const [address, setAddress] = useState('');
-    const [network, setNetwork] = useState('mainnet-beta');
+    const [network, setNetwork] = useState('devnet');
     const [allData,setAllData] = useState<any[]>([]);
-    const [opsComplete,setOpsComplete] = useState<boolean>(false);
+    const [opsComplete,setOpsComplete] = useState<boolean>(true);
 
     const setUpMonitors = async (address:string,network:string) => {
         var mintList:any[] = [];
@@ -117,6 +118,7 @@ const Home: NextPage = () => {
                                         color={'gray.800'}
                                         _placeholder={{
                                             color: 'gray.400',
+                                            fontSize: 'sm'
                                         }}
                                         borderColor={'gray.300'}
                                         id={'email'}
@@ -128,10 +130,10 @@ const Home: NextPage = () => {
                                     />
                                 </FormControl>
                                 <FormControl w={{ base: '100%', md: '30%' }}>
-                                    <Select onChange={(e) => setNetwork(e.target.value)}>
-                                        <option value="devnet">devnet</option>
-                                        <option value="testnet">testnet</option>
-                                        <option value="mainnet-beta">mainnet</option>
+                                    <Select value={network} onChange={(e) => setNetwork(e.target.value)} variant='outline' color={"white"}>
+                                        <option style={{color:"#fff",backgroundColor: "#ED64A6"}} value="devnet">devnet</option>
+                                        <option style={{color:"#fff",backgroundColor: "#ED64A6"}} value="testnet">testnet</option>
+                                        <option style={{color:"#fff",backgroundColor: "#ED64A6"}} value="mainnet-beta">mainnet</option>
                                     </Select>
                                 </FormControl>
                                 <FormControl w={{ base: '100%', md: '30%' }}>
@@ -172,10 +174,10 @@ const Home: NextPage = () => {
                                     <NftList address={address} network={network} setAllData={setAllData}/>
                                 </TabPanel>
                                 <TabPanel>
-                                    <OwnerList allData={allData}/>
+                                    <OwnerList address={address} network={network} setAllData={setAllData} allData={allData}/>
                                 </TabPanel>
                                 <TabPanel>
-                                    <p>three!</p>
+                                    <Airdrop allData={allData} network={network} />
                                 </TabPanel>
                                 <TabPanel>
                                     <p>Create!</p>

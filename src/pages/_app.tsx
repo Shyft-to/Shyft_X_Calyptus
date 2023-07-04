@@ -54,7 +54,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
     return (
         <ChakraProvider theme={theme}>
             <ConnectionProvider endpoint={endpoint}>
-                <WalletProvider wallets={wallets} autoConnect>
+                <WalletProvider wallets={wallets}>
                     <WalletModalProvider>
                         <Component {...pageProps} />
                     </WalletModalProvider>
