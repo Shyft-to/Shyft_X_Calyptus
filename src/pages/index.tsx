@@ -189,7 +189,8 @@ const Home: NextPage = () => {
                                 </TabPanel>
                                 <TabPanel>
                                     {/* <Airdrop allData={allData} network={network} /> */}
-                                    <CreateNAirdrop />
+                                    
+                                    <CreateNAirdrop allData={allData}/>
                                 </TabPanel>
                                 <TabPanel>
                                     <CreateCompressed />

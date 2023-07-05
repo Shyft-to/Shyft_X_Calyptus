@@ -29,13 +29,18 @@ const steps = [
     { title: 'Select Holders', description: '& Airdrop' },
   ]
 
-const CreateNAirdrop = () => {
+  type propsType = {
+    allData: any
+}
+const CreateNAirdrop = (props:propsType) => {
 const toast = useToast();
   
   const { activeStep, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
   })
+
+  const [selectedHolders,setSelectedHolders] = useState<[]>([]);
   return (
     <>
       <Box
@@ -43,10 +48,13 @@ const toast = useToast();
         rounded="lg"
         shadow="1px 1px 3px rgba(0,0,0,0.3)"
         maxWidth={800}
-        p={6}
         m="10px auto"
-        as="form">
-            <Stepper index={activeStep}>
+        p={6}
+        >
+          <Box
+            m="10px auto"
+          >
+            <Stepper size='md' colorScheme='pink' index={activeStep}>
                 {steps.map((step, index) => (
                     <Step key={index} onClick={() => setActiveStep(index)}>
                     <StepIndicator>
@@ -66,19 +74,21 @@ const toast = useToast();
                     </Step>
                 ))}
             </Stepper>
-        
-        {activeStep === 0 ? <CreateMerkle /> : activeStep === 1 ? <CreateCompressedForms /> : <AirdropNfts />}
+          </Box>
+          <Box
+            m="10px auto"
+            pt={"12px"}
+          >
+        {activeStep === 0 ? <CreateMerkle /> : activeStep === 1 ? <CreateCompressedForms /> : <AirdropNfts allData={props.allData} selectedHolders={selectedHolders} setSelectedHolders={setSelectedHolders} />}
         <ButtonGroup mt="5%" w="100%">
           <Flex w="100%" justifyContent="space-between">
             <Flex>
               <Button
                 onClick={() => {
-                    
-                  
                   setActiveStep(activeStep - 1);
                 }}
-                isDisabled={activeStep === 1}
-                colorScheme="teal"
+                isDisabled={activeStep === 0}
+                colorScheme="pink"
                 variant="solid"
                 w="7rem"
                 mr="5%">
@@ -86,11 +96,11 @@ const toast = useToast();
               </Button>
               <Button
                 w="7rem"
-                isDisabled={activeStep === 3}
+                isDisabled={activeStep === 2}
                 onClick={() => {
                   setActiveStep(activeStep + 1);
                 }}
-                colorScheme="teal"
+                colorScheme="pink"
                 variant="outline">
                 Next
               </Button>
@@ -114,6 +124,7 @@ const toast = useToast();
             ) : null}
           </Flex>
         </ButtonGroup>
+        </Box>
       </Box>
     </>
   );
