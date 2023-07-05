@@ -16,7 +16,6 @@ import {
     StepStatus,
     StepTitle,
     Stepper,
-    Text
   } from '@chakra-ui/react'
 
 import { useToast,useSteps } from '@chakra-ui/react';
@@ -34,7 +33,7 @@ const CreateNAirdrop = () => {
 const toast = useToast();
   
   const { activeStep, setActiveStep } = useSteps({
-    index: 1,
+    index: 0,
     count: steps.length,
   })
   return (
@@ -60,7 +59,7 @@ const toast = useToast();
 
                     <Box flexShrink='0' fontFamily={"heading"}>
                         <StepTitle>{step.title}</StepTitle>
-                        <StepDescription><Text color={"whiteAlpha.600"}>{step.description}</Text></StepDescription>
+                        <StepDescription>{step.description}</StepDescription>
                     </Box>
 
                     <StepSeparator />
@@ -68,7 +67,7 @@ const toast = useToast();
                 ))}
             </Stepper>
         
-        {activeStep === 1 ? <CreateMerkle /> : activeStep === 2 ? <CreateCompressedForms /> : <AirdropNfts />}
+        {activeStep === 0 ? <CreateMerkle /> : activeStep === 1 ? <CreateCompressedForms /> : <AirdropNfts />}
         <ButtonGroup mt="5%" w="100%">
           <Flex w="100%" justifyContent="space-between">
             <Flex>
@@ -96,7 +95,7 @@ const toast = useToast();
                 Next
               </Button>
             </Flex>
-            {activeStep === 3 ? (
+            {activeStep === 2 ? (
               <Button
                 w="7rem"
                 colorScheme="red"

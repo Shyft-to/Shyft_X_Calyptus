@@ -1,10 +1,26 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import {clusterApiUrl,Connection,Transaction,Keypair} from "@solana/web3.js";
+import type {Cluster,Signer} from "@solana/web3.js";
+
+import { decode } from 'bs58';
+import { Buffer } from 'buffer';
+
+import {
+    getConcurrentMerkleTreeAccountSize,
+    ALL_DEPTH_SIZE_PAIRS,
+    ValidDepthSizePair,
+  } from "@solana/spl-account-compression";
 //import { ShyftSdk, Network, TxnAction } from '@shyft-to/js';
 import axios from 'axios';
 type Responses = {
     success: boolean;
     message: string;
-    result: {};
+    result: any;
+};
+type TreeSpecsReturn = {
+    max_depth: number;
+    max_buffer_size: number; 
+    canopy_depth: number;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Responses>) {
@@ -18,12 +34,63 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         try {
             var network:string = "";
             var wallet_address:string = "";
-            var max_depth:number = 0;
-            var max_buffer_size:number = 0;
-            var canopy_depth:number = 0;
+            var total_tokens:number = 0;
             var fee_payer: string = "";
+
+            wallet_address = (typeof req.body.wallet_address === "string") ? req.body.wallet_address : '';
+            total_tokens = (typeof req.body.total_tokens === "number") ? req.body.total_tokens : 0;
+
+            // total_tokens = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
+            network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
+
+            const treeSpecs = getTreeSpecs(total_tokens);
+
+            if(total_tokens > 64)
+                throw new Error("TOO_MANY_TOKENS")
+            
+            var response_from_api:any = {};
+
+            const raw = {
+                "network": "devnet",
+                "wallet_address": wallet_address,
+                max_depth_size_pair: {
+                  max_depth: treeSpecs.max_depth,
+                  max_buffer_size: treeSpecs.max_buffer_size
+                },
+                canopy_depth: treeSpecs.canopy_depth,
+                fee_payer: fee_payer
+              };
+            console.log("Request Prams: ");
+            console.dir(raw,{depth:null});
+            
+
+            await axios.request({
+                url:"https://api.shyft.to/sol/v1/nft/compressed/create_tree",
+                method:"POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": process.env.NEXT_SHYFT_API_KEY
+                },
+                data:JSON.stringify(raw)
+            })
+            .then(res => {
+                console.dir(res.data,{depth:null});
+                response_from_api = res.data;
+                response = {
+                    success: res.data.status,
+                    message: res.data.message,
+                    result: res.data.result,
+                };
+                statusCode = 201;
+            })
+            .catch(error => {
+                console.dir(error.response.data,{depth:null});
+                throw error;
+            });
+            
+
         } catch (error:any) {
-            if (error.message === 'WRONG_PARAM') {
+            if (error.message === 'TOO_MANY_TOKENS') {
                 response = {
                     success: false,
                     message: 'Please Enter proper Params',
@@ -58,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             else {
                 response = {
                     success: false,
-                    message: 'Internal Server Error',
+                    message: error.message,
                     result: {},
                 };
                 statusCode = 500;
@@ -76,3 +143,89 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
     
 }
+
+// make a simple, deduplicated list of the allowed depths
+const allDepthSizes = ALL_DEPTH_SIZE_PAIRS.flatMap(
+    (pair) => pair.maxDepth,
+  ).filter((item, pos, self) => self.indexOf(item) == pos);
+  
+  // extract the largest depth that is allowed
+  const largestDepth = allDepthSizes[allDepthSizes.length - 1];
+  
+  const defaultDepthPair = {
+    maxDepth: 3,
+    maxBufferSize: 8,
+  };
+
+
+function getTreeSpecs(tokensToBeMinted:number):TreeSpecsReturn
+{
+    try {
+        let maxDepth = defaultDepthPair.maxDepth;
+        const nodes = parseInt(tokensToBeMinted.toString());
+        console.log("Nodes",nodes);
+        if (!tokensToBeMinted || nodes <= 0) return {max_depth: 3,max_buffer_size: 8, canopy_depth: 0}; //less than 100 result 3
+        
+        /**
+         * The only valid depthSizePairs are stored in the on-chain program and SDK
+         */
+        for (let i = 0; i <= allDepthSizes.length; i++) {
+        if (Math.pow(2, allDepthSizes[i]) >= nodes) {
+            maxDepth = allDepthSizes[i];
+            break;
+        }
+        }
+
+        const maxBufferSize =
+        ALL_DEPTH_SIZE_PAIRS.filter((pair) => pair.maxDepth == maxDepth)?.[0]
+            ?.maxBufferSize ?? defaultDepthPair.maxBufferSize;
+
+        // canopy depth must not be above 17 or else it no worky,
+        const maxCanopyDepth = maxDepth >= 20 ? 17 : maxDepth;
+        
+        return {max_depth: maxDepth,max_buffer_size: maxBufferSize, canopy_depth: 0}
+    } catch (error) {
+        return {max_depth: 14,max_buffer_size: 1024, canopy_depth: 0}
+    }
+    
+}
+
+export async function signAndSendTransactionWithPrivateKeys(
+    network: Cluster,
+    encodedTransaction: string,
+    privateKeys: string[]
+  ): Promise<string> {
+    const connection = new Connection(clusterApiUrl(network), 'confirmed');
+    const signedTxn = await partialSignTransactionWithPrivateKeys(
+      encodedTransaction,
+      privateKeys
+    );
+  
+    const signature = await connection.sendRawTransaction(
+      signedTxn.serialize({ requireAllSignatures: false })
+    );
+    return signature;
+  }
+
+  export async function partialSignTransactionWithPrivateKeys(
+    encodedTransaction: string,
+    privateKeys: string[]
+  ): Promise<Transaction> {
+    const recoveredTransaction = getRawTransaction(encodedTransaction);
+    const signers = getSignersFromPrivateKeys(privateKeys);
+    recoveredTransaction.partialSign(...signers);
+    return recoveredTransaction;
+  }
+
+  function getRawTransaction(encodedTransaction: string): Transaction {
+    const recoveredTransaction = Transaction.from(
+      Buffer.from(encodedTransaction, 'base64')
+    );
+    return recoveredTransaction;
+  }
+  function getSignersFromPrivateKeys(privateKeys: string[]): Signer[] {
+    return privateKeys.map((privateKey) => {
+      const signer = Keypair.fromSecretKey(decode(privateKey)) as Signer;
+      return signer;
+    });
+  }
