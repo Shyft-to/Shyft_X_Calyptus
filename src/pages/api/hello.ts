@@ -76,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     const callbackModify = await shyftClient.callback.update({
                         id: callback_details_to_push.callback_id,
                         addresses: addresses_to_monitor,
-                        callbackUrl:"https://a8f7-2405-201-8010-50c5-f58a-9cfc-5a13-f16e.ngrok-free.app/api/receive-callbacks",
+                        callbackUrl:"https://8ec5-2405-201-8010-50c5-9d48-25db-ddac-b6e5.ngrok-free.app/api/receive-callbacks",
                         events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE]
                     });
                     if (!(callbackModify.hasOwnProperty("id")))
@@ -92,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                         network: shyftNetwork,
                         addresses: addresses_to_monitor,
                         events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
-                        callbackUrl: "https://a8f7-2405-201-8010-50c5-f58a-9cfc-5a13-f16e.ngrok-free.app/api/receive-callbacks",
+                        callbackUrl: "https://8ec5-2405-201-8010-50c5-9d48-25db-ddac-b6e5.ngrok-free.app/api/receive-callbacks",
                     });
     
                     if (!callbackCreate.hasOwnProperty("id"))

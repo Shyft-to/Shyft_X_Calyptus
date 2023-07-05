@@ -17,22 +17,24 @@ import {
     Input,
     Button,
     Stack,
-    Tabs, TabList, TabPanels, Tab, TabPanel, TabIndicator, Center
+    Tabs, TabList, TabPanels, Tab, TabPanel, TabIndicator, Center, Spinner
 } from '@chakra-ui/react';
 import NftList from '../components/NftList';
 import WithSubnavigation from '../components/Navbar';
 import OwnerList from '../components/OwnerList';
 import Airdrop from '../components/Airdrop';
+import CreateCompressed from '../components/CreateCompressed';
+import CreateNAirdrop from '../components/CreateNAirdrop';
 
 const Home: NextPage = () => {
     const [address, setAddress] = useState('');
     const [network, setNetwork] = useState('devnet');
     const [allData,setAllData] = useState<any[]>([]);
-    const [opsComplete,setOpsComplete] = useState<boolean>(true);
+    const [opsComplete,setOpsComplete] = useState<'unloaded'| 'loading' | 'loaded'>('loaded');
 
     const setUpMonitors = async (address:string,network:string) => {
         var mintList:any[] = [];
-
+        setOpsComplete("loading");
         await axios.request({
             url: '/api/candymachine-update-owners',
             method: "POST",
@@ -75,7 +77,7 @@ const Home: NextPage = () => {
         })
         .then(res => {
             if(res.data.success)
-                setOpsComplete(true);
+                setOpsComplete('loaded');
         })
         .catch(err => console.log(err));
 
@@ -154,8 +156,17 @@ const Home: NextPage = () => {
                 </Container>
             </Box>
             <Box as='div' bg={'gray.800'} w={"100%"} minH="82vh">
-                {!opsComplete && <Center color={"whiteAlpha.700"} py={20} fontSize={"2xl"}> Data Yet to be Loaded</Center>}
-                {opsComplete && <Container
+                {opsComplete === "unloaded" && <Center color={"whiteAlpha.700"} py={20} fontSize={"2xl"}> Data Yet to be Loaded</Center>}
+                {opsComplete === "loading" && <Center color={"whiteAlpha.700"} py={20} fontSize={"2xl"}> 
+                    <Spinner
+                        thickness='4px'
+                        speed='0.65s'
+                        emptyColor='gray.200'
+                        color='blue.500'
+                        size='xl'
+                    />
+                </Center>}
+                {opsComplete === "loaded" && <Container
                     maxW={'5xl'}
                     rounded={'lg'}
                     flexDirection={'column'}
@@ -177,10 +188,11 @@ const Home: NextPage = () => {
                                     <OwnerList address={address} network={network} setAllData={setAllData} allData={allData}/>
                                 </TabPanel>
                                 <TabPanel>
-                                    <Airdrop allData={allData} network={network} />
+                                    {/* <Airdrop allData={allData} network={network} /> */}
+                                    <CreateNAirdrop />
                                 </TabPanel>
                                 <TabPanel>
-                                    <p>Create!</p>
+                                    <CreateCompressed />
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>

@@ -18,7 +18,8 @@ import {
     Spacer,
     ButtonGroup,
     Heading,
-    Button
+    Button,
+    Spinner
 } from '@chakra-ui/react';
 import formatAddresses from '../utils/functions';
 type paramType = {
@@ -85,9 +86,19 @@ const OwnerList = (props: paramType) => {
                         borderColor={'whiteAlpha.600'}
                     >
                         <Box p="2">
-                            <Heading size="sm">
-                                Current Holder Snapshot
-                            </Heading>
+                            <Flex>
+                                <Heading size="sm">
+                                    Current Holder Snapshot
+                                </Heading>
+                                {loading === "loading" && <Spinner
+                                        thickness='4px'
+                                        speed='0.65s'
+                                        emptyColor='gray.200'
+                                        color='blue.500'
+                                        size='sm'
+                                    />}
+                            </Flex>
+                            
                         </Box>
                         <Spacer />
                         <ButtonGroup gap="2">
