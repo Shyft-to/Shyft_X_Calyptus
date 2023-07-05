@@ -21,12 +21,45 @@ import {
 } from '@chakra-ui/react';
 
     
-import {ExternalLinkIcon} from "@chakra-ui/icons";
+import {ExternalLinkIcon,CheckIcon,CloseIcon} from "@chakra-ui/icons";
+import axios from 'axios';
 
-const CreateMerkle = () => {
+type propsType = {
+    setMerkleTree:any
+}
+
+const CreateMerkle = (props:propsType) => {
     const [wAddress,setWalletAddress] = useState<string>("");
     const [network,setNetwork] = useState<string>("devnet");
     const [maxTokens,setMaxTokens] = useState(0);
+
+    const [loading,setLoading] = useState<"loading"|"success"|"failed"|"unloaded">("unloaded");
+
+    const createTree = async () => {
+        setLoading("loading");
+        await axios.request({
+            url:"/api/create-merkle-tree",
+            method: "POST",
+            data: {
+                wallet_address:wAddress,
+                total_tokens:maxTokens,
+                network:network
+            }
+        })
+        .then(res => {
+            if(res.data.success === true)
+            {
+                setLoading("success");
+                
+                setTimeout(() => {
+                    setLoading("unloaded");
+                }, 2000);
+            }
+        })
+        .catch(err => {
+
+        })
+    }
     return (
         <>
             <Heading w="100%" fontSize={"2xl"} textAlign={'center'} fontWeight="bold" mt="2%" mb="2%">
@@ -62,7 +95,10 @@ const CreateMerkle = () => {
                 </FormControl>
             </Flex>
             <Stack mt={8} flexDirection={"column"}>
-                <Button fontFamily={"heading"} colorScheme='purple'>Create Tree</Button>
+                {loading === "unloaded" && <Button fontFamily={"heading"} colorScheme='purple' onClick={createTree}>Create Tree</Button>}
+                {loading === "success" && <Button fontFamily={"heading"} colorScheme='green' leftIcon={<CheckIcon />}>Success</Button>}
+                {loading === "failed" && <Button fontFamily={"heading"} colorScheme='red' leftIcon={<CheckIcon />}>Failed</Button>}
+                {loading === "loading" && <Button fontFamily={"heading"} colorScheme='purple' isLoading loadingText='Creating'>Creating</Button>}
                 <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"sm"} mt={2} fontFamily={"heading"}>To find out more about Merkle Trees and their capacity, <Link href='https://docs.shyft.to/start-hacking/nft/compressed-nft#create-merkle-tree' isExternal>click here</Link>,or visit <Link href='https://docs.shyft.to' isExternal>SHYFT Docs</Link> <ExternalLinkIcon mx='2px' mt="-0.5" /></Text>
             </Stack>
         </>

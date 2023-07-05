@@ -17,9 +17,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         var statusCode = 0;
         try {
             var network:string = "";
-            var wallet_address:string = "";
-            var total_tokens:number = 0;
-            var fee_payer: string = "";
+            var merkle_tree:string = "";
+            var max_supply:number = 0;
+            var metadata_uri: string = "";
+            var collection_address: string = "";
+            var holders:[] = [];
+
+            network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
+            merkle_tree = (typeof req.body.merkle_tree === "string") ? req.body.merkle_tree : '';
+            max_supply = (typeof req.body.max_supply === "number") ? req.body.max_supply : 0;
+            metadata_uri = (typeof req.body.metadata_uri === "string") ? req.body.metadata_uri : '';
+            collection_address = (typeof req.body.collection_address === "string") ? req.body.collection_address : '';
+
+            holders = (typeof req.body.holders !== "string" && req.body.holders?.length > 0) ? req.body.holders : '';
+
+            for (let index = 0; index < holders.length; index++) {
+                const holder:string = holders[index];
+
+                var raw = {
+                    network: network,
+                    creator_wallet: process.env.NEXT_PUBLIC_KEY,
+                    metadata_uri: metadata_uri,
+                    merkle_tree: merkle_tree,
+                    collection_address: collection_address,
+                    max_supply: max_supply,
+                    receiver: holder
+                };
+                console.log("params:");
+                console.dir(raw,{depth:null});
+                
+                var response_from_api:any = {};
+
+                await axios.request({
+                    url:"https://api.shyft.to/sol/v1/nft/compressed/mint",
+                    method:"POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": process.env.NEXT_SHYFT_API_KEY
+                    },
+                    data:JSON.stringify(raw)
+                })
+                .then(res => {
+                    console.dir(res.data,{depth:null});
+                    response_from_api = res.data;
+                    response = {
+                        success: res.data.status,
+                        message: res.data.message,
+                        result: res.data.result,
+                    };
+                    statusCode = 201;
+                })
+                .catch(error => {
+                    console.dir(error.response.data,{depth:null});
+                    throw error;
+                });
+                //sign here
+                break;
+            }
+
+            // total_tokens = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
         
             
         } catch (error:any) {

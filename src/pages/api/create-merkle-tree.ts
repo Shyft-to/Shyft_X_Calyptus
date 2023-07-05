@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         };
         var statusCode = 0;
         try {
-            var network:string = "";
+            var network:Cluster = "devnet";
             var wallet_address:string = "";
             var total_tokens:number = 0;
             var fee_payer: string = "";
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             var response_from_api:any = {};
 
             const raw = {
-                "network": "devnet",
+                "network": network,
                 "wallet_address": wallet_address,
                 max_depth_size_pair: {
                   max_depth: treeSpecs.max_depth,
@@ -76,19 +76,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             .then(res => {
                 console.dir(res.data,{depth:null});
                 response_from_api = res.data;
-                response = {
-                    success: res.data.status,
-                    message: res.data.message,
-                    result: res.data.result,
-                };
-                statusCode = 201;
+                
             })
             .catch(error => {
                 console.dir(error.response.data,{depth:null});
                 throw error;
             });
             
-
+            const recoveredTxn = await signAndSendTransactionWithPrivateKeys(network,response_from_api.result.encoded_transaction,[process.env.NEXT_PRIVATE_KEY ?? ""])
+            if(recoveredTxn)
+            {
+                response = {
+                    success: response_from_api.status,
+                    message: response_from_api.message,
+                    result: response_from_api.result,
+                };
+                statusCode = 201;
+            }
+            else
+                throw new Error("COULD_NOT_SIGN");
+        
         } catch (error:any) {
             if (error.message === 'TOO_MANY_TOKENS') {
                 response = {
@@ -118,6 +125,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 response = {
                     success: false,
                     message: 'Database unavailable',
+                    result: {},
+                };
+                statusCode = 503;
+            }
+            else if (error.message === 'COULD_NOT_SIGN') {
+                response = {
+                    success: false,
+                    message: 'Signer Error',
                     result: {},
                 };
                 statusCode = 503;

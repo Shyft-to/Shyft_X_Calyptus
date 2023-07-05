@@ -41,6 +41,7 @@ const toast = useToast();
   })
 
   const [selectedHolders,setSelectedHolders] = useState<[]>([]);
+  const [activeMerkleTree,setMerkleTree] = useState<string>("");
   return (
     <>
       <Box
@@ -79,7 +80,7 @@ const toast = useToast();
             m="10px auto"
             pt={"12px"}
           >
-        {activeStep === 0 ? <CreateMerkle /> : activeStep === 1 ? <CreateCompressedForms /> : <AirdropNfts allData={props.allData} selectedHolders={selectedHolders} setSelectedHolders={setSelectedHolders} />}
+        {activeStep === 0 ? <CreateMerkle setMerkleTree={setMerkleTree} /> : activeStep === 1 ? <CreateCompressedForms /> : <AirdropNfts allData={props.allData} selectedHolders={selectedHolders} setSelectedHolders={setSelectedHolders} />}
         <ButtonGroup mt="5%" w="100%">
           <Flex w="100%" justifyContent="space-between">
             <Flex>
