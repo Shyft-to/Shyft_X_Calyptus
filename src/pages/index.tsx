@@ -1,11 +1,12 @@
 import type { NextPage } from 'next';
 // import dynamic from 'next/dynamic';
 import Head from 'next/head';
-// import Image from 'next/image';
 // import React from 'react';
 import styles from '../styles/Home.module.css';
 import { useState } from 'react';
 import axios from 'axios';
+
+import ShyftLogo from '../styles/shyft_logo.svg';
 
 import {
     Container,
@@ -25,6 +26,9 @@ import {
     TabIndicator,
     Center,
     Spinner,
+    Text,
+    Link,
+    Image,
 } from '@chakra-ui/react';
 import NftList from '../components/NftList';
 import WithSubnavigation from '../components/Navbar';
@@ -227,7 +231,38 @@ const Home: NextPage = () => {
                 )}
             </Box>
 
-            <footer className={styles.footer}>Powered by Calyptus and SHYFT</footer>
+            {/* <footer className={styles.footer}>Powered by Calyptus and SHYFT</footer> */}
+            <Box bg={'gray.900'} color={'gray.300'}>
+                <Container
+                    as={Stack}
+                    maxW={'full'}
+                    py={4}
+                    direction={{ base: 'column', md: 'row' }}
+                    spacing={4}
+                    justify={{ base: 'center', md: 'space-between' }}
+                    align={{ base: 'center', md: 'center' }}
+                >
+                    <Text fontFamily={'customCursive'} fontSize={'lg'}>
+                        Made with love ❤️ by Shyft & Calyptus
+                    </Text>
+                    <Stack direction={'row'} spacing={6}>
+                        <Link href={'https://calyptus.co/'} isExternal>
+                            <Box bg={'whiteAlpha.900'} px={4} py={2} borderRadius={'md'}>
+                                <Image
+                                    src="https://calyptus.co/wp-content/uploads/logo.svg"
+                                    alt="Calyptus"
+                                    width={'90px'}
+                                />
+                            </Box>
+                        </Link>
+                        <Link href={'https://shyft.to/'} isExternal>
+                            <Box bg={'gray.700'} px={4} py={2} borderRadius={'md'}>
+                                <Image src="/shyft_logo.svg" alt="SHYFT" width={'86px'} />
+                            </Box>
+                        </Link>
+                    </Stack>
+                </Container>
+            </Box>
         </div>
     );
 };

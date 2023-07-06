@@ -38,6 +38,7 @@
         "@chakra-ui/react": "^2.7.1",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
+        "@fontsource/cookie": "^5.0.4",
         "@fontsource/inter": "^5.0.3",
         "@fontsource/poppins": "^5.0.3",
         "@shyft-to/js": "^0.2.16",

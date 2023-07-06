@@ -7,64 +7,56 @@ type ShyftArrayResultResponse = {
     success: boolean;
     message?: string;
     result: object[];
-}
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ShyftArrayResultResponse>) {
     try {
         var cm_address: string = '';
-        var network:string = '';
+        var network: string = '';
 
-        cm_address = (typeof req.body.cm_address === "string")?req.body.cm_address:"";
-        network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
+        cm_address = typeof req.body.cm_address === 'string' ? req.body.cm_address : '';
+        network = typeof req.body.network === 'string' ? req.body.network : 'mainnet-beta';
 
-        var shyftNetwork:Network = Network.Mainnet;
-        if(network === "mainnet-beta")
-            shyftNetwork = Network.Mainnet;
-        else if(network === "devnet")
-            shyftNetwork = Network.Devnet;
-        else if(network === "testnet")
-            shyftNetwork = Network.Testnet;
-        else
-            throw new Error("WRONG_NETWORK");
-        
-        var cm_mints:any[] = [];
-        var getMintsFromCandyMachine:string[];
-        
+        var shyftNetwork: Network = Network.Mainnet;
+        if (network === 'mainnet-beta') shyftNetwork = Network.Mainnet;
+        else if (network === 'devnet') shyftNetwork = Network.Devnet;
+        else if (network === 'testnet') shyftNetwork = Network.Testnet;
+        else throw new Error('WRONG_NETWORK');
+
+        var cm_mints: any[] = [];
+        var getMintsFromCandyMachine: string[];
+
         try {
             getMintsFromCandyMachine = await shyftClient.candyMachine.readMints({
                 network: shyftNetwork,
                 address: cm_address,
-                version: CandyMachineProgram.V3
+                version: CandyMachineProgram.V3,
             });
         } catch (error) {
-            throw Error("WRONG_ADDR");
+            throw Error('WRONG_ADDR');
         }
-        
+
         // console.log("here2.1");
         // console.log(getMintsFromCandyMachine);
         // console.log("here3");
-        if(getMintsFromCandyMachine && getMintsFromCandyMachine.length > 0){
+        if (getMintsFromCandyMachine && getMintsFromCandyMachine.length > 0) {
             for (let index = 0; index < getMintsFromCandyMachine.length; index++) {
                 const nft = getMintsFromCandyMachine[index];
                 cm_mints.push(nft);
-
             }
-        }
-        else
-            throw new Error("NO_NFTS_IN_CM");
-        
+        } else throw new Error('NO_NFTS_IN_CM');
+
         res.status(200).json({
             success: true,
-            message: "All Nfts in this CM",
-            result: cm_mints
-        }); 
-
+            message: 'All Nfts in this CM',
+            result: cm_mints,
+        });
     } catch (error: any) {
         console.log(error);
         res.status(500).json({
             success: false,
-            message: "Test",
-            result: []
+            message: 'Test',
+            result: [],
         });
     }
 }
@@ -79,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 //                 //     .from('monitor_mints')
 //                 //     .select()
 //                 //     .eq("mint_address",nft.mint);
-                
+
 //                 // if(mintExists.count !== null)
 //                 //     objectToBePushed = mintExists.data[0];
 

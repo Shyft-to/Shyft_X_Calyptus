@@ -3,6 +3,8 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/poppins/400.css";
+import "@fontsource/cookie/400.css";
+
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -20,7 +22,8 @@ require('../styles/globals.css');
 const fonts = {
     heading: `'Inter', sans-serif`,
     body: `'Poppins', sans-serif`,
-    customHeading: `'Inter', sans-serif`
+    customHeading: `'Inter', sans-serif`,
+    customCursive: `'Cookie', cursive`
   };
 const theme = extendTheme({fonts});
 

@@ -53,7 +53,7 @@ import {
               textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
               fontFamily={'heading'}
               color={"white"}>
-              Logo
+              
             </Text>
   
             {/* <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
@@ -68,8 +68,9 @@ import {
             spacing={6}>
             <Button
               as={'a'}
-              fontSize={'sm'}
+              fontSize={'2xl'}
               fontWeight={400}
+              fontFamily={"customCursive"}
               variant={'link'}
               color={'white'}
               textDecoration={"none"}
