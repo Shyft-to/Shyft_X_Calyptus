@@ -176,8 +176,8 @@ const Home: NextPage = () => {
                             <TabList>
                                 <Tab px={"30px"}>NFTs</Tab>
                                 <Tab px={"20px"}>Holders</Tab>
-                                <Tab px={"20px"}>Airdrop</Tab>
-                                <Tab px={"20px"}>Create</Tab>
+                                <Tab px={"20px"}>Create & Airdrop</Tab>
+                                {/* <Tab px={"20px"}>Create</Tab> */}
                             </TabList>
                             {/* <TabIndicator mt="-1.5px" height="2px" bg="purple.700" borderRadius="1px" /> */}
                             <TabPanels>
@@ -192,9 +192,9 @@ const Home: NextPage = () => {
                                     
                                     <CreateNAirdrop allData={allData}/>
                                 </TabPanel>
-                                <TabPanel>
+                                {/* <TabPanel>
                                     <CreateCompressed />
-                                </TabPanel>
+                                </TabPanel> */}
                             </TabPanels>
                         </Tabs>
                     </Stack>           

@@ -32,33 +32,69 @@ const CreateMerkle = (props:propsType) => {
     const [wAddress,setWalletAddress] = useState<string>("");
     const [network,setNetwork] = useState<string>("devnet");
     const [maxTokens,setMaxTokens] = useState(0);
+    const [msg,setMsg] = useState<string>("");
 
     const [loading,setLoading] = useState<"loading"|"success"|"failed"|"unloaded">("unloaded");
 
     const createTree = async () => {
-        setLoading("loading");
-        await axios.request({
-            url:"/api/create-merkle-tree",
-            method: "POST",
-            data: {
-                wallet_address:wAddress,
-                total_tokens:maxTokens,
-                network:network
-            }
-        })
-        .then(res => {
-            if(res.data.success === true)
-            {
-                setLoading("success");
-                
+        const validNetworks = ["devnet","testnet","mainnet-beta"];
+        var errorOcc = false;
+        try {
+            if(wAddress === "")
+                throw new Error("NO_WADDRESS");
+            else if(validNetworks.includes(network) === false)
+                throw new Error("INVALID_NETWORK");
+            else if(maxTokens < 0 || maxTokens > 64)
+                throw new Error("TOO_MANY_TOKENS");
+            
+        } catch (error:any) {
+            if(error.message === "NO_WADDRESS")
+                setMsg("Wallet Address cannot be empty");
+            else if(error.message === "INVALID_NETWORK")
+                setMsg("Invalid Network Selected");
+            else if(error.message === "TOO_MANY_TOKENS")
+                setMsg("Invalid Network Selected");
+
+            errorOcc = true;
+        }
+        if(!errorOcc)
+        {
+            setLoading("loading");
+            await axios.request({
+                url:"/api/create-merkle-tree",
+                method: "POST",
+                data: {
+                    wallet_address:wAddress,
+                    total_tokens:maxTokens,
+                    network:network
+                }
+            })
+            .then(res => {
+                if(res.data.success === true)
+                {
+                    setLoading("success");
+                    props.setMerkleTree(res.data.result.tree);
+                    setMsg(`Merkle Tree created: ${res.data.result.tree ?? "--"}`);
+                    setTimeout(() => {
+                        setLoading("unloaded");
+                    }, 2000);
+                }
+                else
+                {
+                    setLoading("failed");
+                    setTimeout(() => {
+                        setLoading("unloaded");
+                    }, 1000);
+                }
+            })
+            .catch(err => {
+                setLoading("failed");
+                setMsg(`Error: ${err.message}`);
                 setTimeout(() => {
                     setLoading("unloaded");
-                }, 2000);
-            }
-        })
-        .catch(err => {
-
-        })
+                }, 1000);
+            })
+        }
     }
     return (
         <>
@@ -97,8 +133,9 @@ const CreateMerkle = (props:propsType) => {
             <Stack mt={8} flexDirection={"column"}>
                 {loading === "unloaded" && <Button fontFamily={"heading"} colorScheme='purple' onClick={createTree}>Create Tree</Button>}
                 {loading === "success" && <Button fontFamily={"heading"} colorScheme='green' leftIcon={<CheckIcon />}>Success</Button>}
-                {loading === "failed" && <Button fontFamily={"heading"} colorScheme='red' leftIcon={<CheckIcon />}>Failed</Button>}
+                {loading === "failed" && <Button fontFamily={"heading"} colorScheme='red' leftIcon={<CloseIcon />}>Failed</Button>}
                 {loading === "loading" && <Button fontFamily={"heading"} colorScheme='purple' isLoading loadingText='Creating'>Creating</Button>}
+                {msg!=="" && <Text textAlign={"center"} color={"yellow.300"} fontSize={"sm"} mt={1} fontFamily={"heading"}>{msg}</Text>}
                 <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"sm"} mt={2} fontFamily={"heading"}>To find out more about Merkle Trees and their capacity, <Link href='https://docs.shyft.to/start-hacking/nft/compressed-nft#create-merkle-tree' isExternal>click here</Link>,or visit <Link href='https://docs.shyft.to' isExternal>SHYFT Docs</Link> <ExternalLinkIcon mx='2px' mt="-0.5" /></Text>
             </Stack>
         </>

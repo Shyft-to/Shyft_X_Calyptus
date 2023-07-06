@@ -87,9 +87,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             if(recoveredTxn)
             {
                 response = {
-                    success: response_from_api.status,
+                    success: response_from_api.success,
                     message: response_from_api.message,
-                    result: response_from_api.result,
+                    result: {"tree":response_from_api.result.tree},
                 };
                 statusCode = 201;
             }

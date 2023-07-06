@@ -55,7 +55,7 @@ const toast = useToast();
           <Box
             m="10px auto"
           >
-            <Stepper size='md' colorScheme='pink' index={activeStep}>
+            <Stepper size={{base:"xs", md:"md"}} colorScheme='pink' index={activeStep}>
                 {steps.map((step, index) => (
                     <Step key={index} onClick={() => setActiveStep(index)}>
                     <StepIndicator>

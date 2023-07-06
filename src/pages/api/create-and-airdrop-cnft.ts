@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-//import { ShyftSdk, Network, TxnAction } from '@shyft-to/js';
+import {clusterApiUrl,Connection,Transaction,Keypair} from "@solana/web3.js";
+import { decode } from 'bs58';
+import { Buffer } from 'buffer';
 import axios from 'axios';
+
+import type {Cluster,Signer} from "@solana/web3.js";
 type Responses = {
     success: boolean;
     message: string;
@@ -16,18 +20,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         };
         var statusCode = 0;
         try {
-            var network:string = "";
+            var network:Cluster = "devnet";
             var merkle_tree:string = "";
             var max_supply:number = 0;
             var metadata_uri: string = "";
             var collection_address: string = "";
-            var holders:[] = [];
+            var holders:string[] = [];
+            var confirmTxns:string[] = []; 
 
             network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
             merkle_tree = (typeof req.body.merkle_tree === "string") ? req.body.merkle_tree : '';
             max_supply = (typeof req.body.max_supply === "number") ? req.body.max_supply : 0;
             metadata_uri = (typeof req.body.metadata_uri === "string") ? req.body.metadata_uri : '';
-            collection_address = (typeof req.body.collection_address === "string") ? req.body.collection_address : '';
+            // collection_address = (typeof req.body.collection_address === "string") ? req.body.collection_address : '';
 
             holders = (typeof req.body.holders !== "string" && req.body.holders?.length > 0) ? req.body.holders : '';
 
@@ -39,12 +44,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     creator_wallet: process.env.NEXT_PUBLIC_KEY,
                     metadata_uri: metadata_uri,
                     merkle_tree: merkle_tree,
-                    collection_address: collection_address,
+                    // collection_address: collection_address,
                     max_supply: max_supply,
                     receiver: holder
                 };
-                console.log("params:");
-                console.dir(raw,{depth:null});
                 
                 var response_from_api:any = {};
 
@@ -58,58 +61,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     data:JSON.stringify(raw)
                 })
                 .then(res => {
-                    console.dir(res.data,{depth:null});
-                    response_from_api = res.data;
-                    response = {
-                        success: res.data.status,
-                        message: res.data.message,
-                        result: res.data.result,
-                    };
-                    statusCode = 201;
+                    //console.dir(res.data,{depth:null});
+                    if(res.data.success === true)
+                        response_from_api = res.data;
+                    else
+                        throw new Error("MINT_ERROR");
                 })
                 .catch(error => {
-                    console.dir(error.response.data,{depth:null});
-                    throw error;
+                    //console.dir(error.message,{depth:null});
+                    if(error.message === "MINT_ERROR")
+                        throw new Error("MINT_ERROR");
+                    else
+                        throw error;
                 });
-                //sign here
-                break;
-            }
+                
+                const recoveredTxn = await signAndSendTransactionWithPrivateKeys(network,response_from_api.result.encoded_transaction,[process.env.NEXT_PRIVATE_KEY ?? ""])
+                // console.log("Recovred",recoveredTxn);
+                if(recoveredTxn)
+                {
+                    confirmTxns.push(recoveredTxn);
+                }
+                else
+                    throw new Error("COULD_NOT_SIGN");
 
+                // break;
+            }
+            response = {
+                success: true,
+                message: 'Compressed NFTs Airdropped',
+                result: {
+                    tree: merkle_tree,
+                    confirmed_transactions: confirmTxns
+                }
+            };
+            statusCode = 200;
             // total_tokens = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
         
-            
         } catch (error:any) {
-            if (error.message === 'WRONG_PARAM') {
+            
+            if (error.message === 'COULD_NOT_SIGN') {
                 response = {
                     success: false,
-                    message: 'Please Enter proper Params',
+                    message: 'Could not sign the transaction',
                     result: {},
                 };
-                statusCode = 400;
+                statusCode = 401;
             }
-            else if (error.message === 'CALLBACK_NOT_CREATED') {
+            else if (error.message === 'MINT_ERROR') {
                 response = {
                     success: false,
-                    message: 'Error Monitoring the addresses',
+                    message: 'Minting Transaction not generated',
                     result: {},
                 };
-                statusCode = 403;
-            }
-            else if (error.message === 'INSERT_TO_DB_FAILED') {
-                response = {
-                    success: false,
-                    message: 'Error Updating the DB',
-                    result: {},
-                };
-                statusCode = 403;
-            }
-            else if (error.message === 'COULD_NOT_GET_CBDATA') {
-                response = {
-                    success: false,
-                    message: 'Database unavailable',
-                    result: {},
-                };
-                statusCode = 503;
+                statusCode = 500;
             }
             else {
                 response = {
@@ -132,3 +136,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
     
 }
+
+async function signAndSendTransactionWithPrivateKeys(
+    network: Cluster,
+    encodedTransaction: string,
+    privateKeys: string[]
+  ): Promise<string> {
+    const connection = new Connection(clusterApiUrl(network), 'confirmed');
+    const signedTxn = await partialSignTransactionWithPrivateKeys(
+      encodedTransaction,
+      privateKeys
+    );
+  
+    const signature = await connection.sendRawTransaction(
+      signedTxn.serialize({ requireAllSignatures: false })
+    );
+    return signature;
+  }
+
+  export async function partialSignTransactionWithPrivateKeys(
+    encodedTransaction: string,
+    privateKeys: string[]
+  ): Promise<Transaction> {
+    const recoveredTransaction = getRawTransaction(encodedTransaction);
+    const signers = getSignersFromPrivateKeys(privateKeys);
+    recoveredTransaction.partialSign(...signers);
+    return recoveredTransaction;
+  }
+
+  function getRawTransaction(encodedTransaction: string): Transaction {
+    const recoveredTransaction = Transaction.from(
+      Buffer.from(encodedTransaction, 'base64')
+    );
+    return recoveredTransaction;
+  }
+  function getSignersFromPrivateKeys(privateKeys: string[]): Signer[] {
+    return privateKeys.map((privateKey) => {
+      const signer = Keypair.fromSecretKey(decode(privateKey)) as Signer;
+      return signer;
+    });
+  }
