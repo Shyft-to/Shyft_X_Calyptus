@@ -5,13 +5,14 @@ type paramType = {
     address: string,
     network: string,
     setAllData: any
+    opsComplete: string
 }
 
 const NftList = (props: paramType) => {
     const [nfts,setNfts] = useState([]);
     const [loading,setLoading] = useState<'unloaded'| 'loading' | 'loaded'>('unloaded');
     useEffect(() => {
-        if(props.address && props.network)
+        if(props.opsComplete === "loaded" && props.address && props.network)
         {
             setLoading('loading');
             axios({
@@ -49,7 +50,7 @@ const NftList = (props: paramType) => {
         
     
       
-    }, [props.address,props.network])
+    }, [props.opsComplete])
     
 
     return (

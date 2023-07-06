@@ -38,78 +38,62 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             // console.log(req.body);
             var reference_address: string = '';
             var addresses_to_monitor: string[] = [];
-            var network:string = '';
+            var network: string = '';
 
-            reference_address = (typeof req.body.reference_address === "string") ? req.body.reference_address : '';
+            reference_address = typeof req.body.reference_address === 'string' ? req.body.reference_address : '';
             addresses_to_monitor = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
-            network = (typeof req.body.network === "string")?req.body.network:"mainnet-beta";
+            network = typeof req.body.network === 'string' ? req.body.network : 'mainnet-beta';
 
-            var shyftNetwork:Network = Network.Mainnet;
-            if(network === "mainnet-beta")
-                shyftNetwork = Network.Mainnet;
-            else if(network === "devnet")
-                shyftNetwork = Network.Devnet;
-            else if(network === "testnet")
-                shyftNetwork = Network.Testnet;
-            else
-                throw new Error("WRONG_NETWORK")
-
+            var shyftNetwork: Network = Network.Mainnet;
+            if (network === 'mainnet-beta') shyftNetwork = Network.Mainnet;
+            else if (network === 'devnet') shyftNetwork = Network.Devnet;
+            else if (network === 'testnet') shyftNetwork = Network.Testnet;
+            else throw new Error('WRONG_NETWORK');
 
             if (reference_address && addresses_to_monitor.length) {
-                var callback_details_to_push:any = {}; 
-                
-                const callbackExists = await supabase
-                        .from('callback_details')
-                        .select()
-                        .eq("reference_address",reference_address)
-                        .match({
-                            network: network,
-                        });
-                
-                if(callbackExists.error !== null)
-                    throw new Error("COULD_NOT_GET_CBDATA");
-                
-                if(callbackExists.data?.length > 0)
-                {
+                var callback_details_to_push: any = {};
+
+                const callbackExists = await supabase.from('callback_details').select();
+
+                if (callbackExists.error !== null) throw new Error('COULD_NOT_GET_CBDATA');
+
+                if (callbackExists.data?.length > 0) {
                     callback_details_to_push = callbackExists.data[0];
 
                     const callbackModify = await shyftClient.callback.update({
+                        network: shyftNetwork,
                         id: callback_details_to_push.callback_id,
                         addresses: addresses_to_monitor,
-                        callbackUrl:"https://8ec5-2405-201-8010-50c5-9d48-25db-ddac-b6e5.ngrok-free.app/api/receive-callbacks",
-                        events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE]
+                        callbackUrl: `${process.env.NEXT_CALLBACK_URL}/api/receive-callbacks`,
+                        events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
                     });
-                    if (!(callbackModify.hasOwnProperty("id")))
-                        throw new Error('CALLBACK_NOT_CREATED');
+                    if (!callbackModify.hasOwnProperty('id')) throw new Error('CALLBACK_NOT_CREATED');
 
-                    callback_details_to_push = {...callback_details_to_push,monitor_addresses:{addresses:addresses_to_monitor}};
-
-                }
-                else
-                {
-                    
+                    callback_details_to_push = {
+                        ...callback_details_to_push,
+                        monitor_addresses: { addresses: addresses_to_monitor },
+                    };
+                } else {
                     const callbackCreate = await shyftClient.callback.register({
                         network: shyftNetwork,
                         addresses: addresses_to_monitor,
                         events: [TxnAction.NFT_TRANSFER, TxnAction.NFT_BURN, TxnAction.NFT_SALE],
-                        callbackUrl: "https://8ec5-2405-201-8010-50c5-9d48-25db-ddac-b6e5.ngrok-free.app/api/receive-callbacks",
+                        callbackUrl: `${process.env.NEXT_CALLBACK_URL}/api/receive-callbacks`,
                     });
-    
-                    if (!callbackCreate.hasOwnProperty("id"))
-                        throw new Error('CALLBACK_NOT_CREATED');
-                    
+
+                    if (!callbackCreate.hasOwnProperty('id')) throw new Error('CALLBACK_NOT_CREATED');
+
                     callback_details_to_push = {
                         reference_address: reference_address,
-                        monitor_addresses: {addresses:addresses_to_monitor},
+                        monitor_addresses: { addresses: addresses_to_monitor },
                         callback_id: callbackCreate.id,
-                        network: network
-                    }
+                        network: network,
+                    };
                 }
 
                 const insertToDb = await supabase.from('callback_details').upsert(callback_details_to_push);
 
-                if (insertToDb.error !== null)
-                    throw new Error('INSERT_TO_DB_FAILED');
+                if (insertToDb.error !== null) throw new Error('INSERT_TO_DB_FAILED');
 
                 console.log('All Operations Complete');
                 response = {
@@ -118,7 +102,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     result: {},
                 };
                 statusCode = 200;
-
             } else {
                 throw new Error('WRONG_PARAM');
             }
@@ -130,32 +113,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                     result: {},
                 };
                 statusCode = 400;
-            }
-            else if (error.message === 'CALLBACK_NOT_CREATED') {
+            } else if (error.message === 'CALLBACK_NOT_CREATED') {
                 response = {
                     success: false,
                     message: 'Error Monitoring the addresses',
                     result: {},
                 };
                 statusCode = 403;
-            }
-            else if (error.message === 'INSERT_TO_DB_FAILED') {
+            } else if (error.message === 'INSERT_TO_DB_FAILED') {
                 response = {
                     success: false,
                     message: 'Error Updating the DB',
                     result: {},
                 };
                 statusCode = 403;
-            }
-            else if (error.message === 'COULD_NOT_GET_CBDATA') {
+            } else if (error.message === 'COULD_NOT_GET_CBDATA') {
                 response = {
                     success: false,
                     message: 'Database unavailable',
                     result: {},
                 };
                 statusCode = 503;
-            }
-            else {
+            } else {
                 response = {
                     success: false,
                     message: 'Internal Server Error',
