@@ -68,7 +68,7 @@ import {
             spacing={6}>
             <Button
               as={'a'}
-              fontSize={'2xl'}
+              fontSize={'md'}
               fontWeight={400}
               fontFamily={"customCursive"}
               variant={'link'}

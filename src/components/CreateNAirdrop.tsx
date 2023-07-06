@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Box, ButtonGroup, Button, Flex } from '@chakra-ui/react';
 
 import {
@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 
-import { useToast, useSteps } from '@chakra-ui/react';
+import { useSteps } from '@chakra-ui/react';
 import CreateMerkle from './CreateAirdropForms/CreateMerkleTree';
 import CreateCompressedForms from './CreateAirdropForms/CreateCompressedForms';
 import AirdropNfts from './CreateAirdropForms/AirdropNfts';
@@ -29,7 +29,7 @@ type propsType = {
     allData: any;
 };
 const CreateNAirdrop = (props: propsType) => {
-    const toast = useToast();
+    // const toast = useToast();
 
     const { activeStep, setActiveStep } = useSteps({
         index: 0,
@@ -37,6 +37,7 @@ const CreateNAirdrop = (props: propsType) => {
     });
 
     const [selectedHolders, setSelectedHolders] = useState<[]>([]);
+    const [allselectRan,setAllSelectRan] = useState(false);
     const [activeMerkleTree, setMerkleTree] = useState<string>('');
     const [network, setNetwork] = useState<string>('devnet');
     const [maxSupply, setSupply] = useState<number>(0);
@@ -45,6 +46,22 @@ const CreateNAirdrop = (props: propsType) => {
     const [loading, setLoading] = useState<'loading' | 'success' | 'failed' | 'unloaded'>('unloaded');
     const [message, setMessage] = useState<string>('');
     const [responseMerkle, setRespMerkle] = useState<string>('');
+
+    useEffect(() => {
+        if(props.allData.length > 0 && allselectRan === false)
+            selectAll()
+    }, [props.allData])
+
+    const selectAll = async() => {
+        console.log("CURRENT SELECTED ALL: ",props.allData);
+        const dataAllData:any = []
+        await props.allData.map(async (item:any) => {
+            dataAllData.push(item.current_holder);
+          });
+        setSelectedHolders(dataAllData);
+        setAllSelectRan(true);
+    }
+    
 
     const createNAirdropTokens = async () => {
         setMessage('');

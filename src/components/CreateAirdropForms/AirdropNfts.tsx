@@ -44,7 +44,7 @@ const AirdropNfts = (props: propsType) => {
     } 
     return ( 
         <>
-            <TableContainer mt={8} border={'1px'} borderRadius={8} borderColor={'whiteAlpha.600'} px={4} py={5}>
+            <TableContainer mt={8} border={'1px'} borderRadius={8} borderColor={'whiteAlpha.600'} px={4} py={5} height={"500px"} overflowY={"scroll"}>
                 <Table variant="simple">
                     <TableCaption>Select and Airdrop cNFTs to various holders</TableCaption>
                     <Thead>
@@ -54,7 +54,7 @@ const AirdropNfts = (props: propsType) => {
                             <Th textAlign={"end"} width={"32px"}></Th>
                         </Tr>
                     </Thead>
-                    <Tbody>
+                    <Tbody >
                     {props.allData.map((nft:any) => <Tr key={nft.nft_data.mint}>
                             <Td>
                                 <Stack direction={'row'} align={'center'}>

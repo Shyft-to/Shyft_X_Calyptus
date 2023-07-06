@@ -23,7 +23,7 @@ const fonts = {
     heading: `'Inter', sans-serif`,
     body: `'Poppins', sans-serif`,
     customHeading: `'Inter', sans-serif`,
-    customCursive: `'Cookie', cursive`
+    customCursive: `'Poppins', sans-serif`
   };
 const theme = extendTheme({fonts});
 

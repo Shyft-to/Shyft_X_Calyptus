@@ -10,8 +10,11 @@ NEXT_SUPABASE_DB_URL= supabase DB url
 NEXT_SUPABASE_DB_KEY= supabase key
 NEXT_SHYFT_API_EP= https://api.shyft.to/sol/v1/
 NEXT_SHYFT_API_KEY= your SHYFT API key from shyft.to
+NEXT_CALLBACK_URL=The url to which the callbacks will be reported to, when running on local environment you can set it up using ngrok, localtunnel,serveo etc
+NEXT_PUBLIC_KEY= public key of the user who setup the project, merkle tree auth and Compressed NFT authority remains with this,this will also be the feepayer while creating merkle tree and compressed NFTs
+NEXT_PRIVATE_KEY=private key of the above user
 
-Supabase should have two tables
+Supabase project setup should have two tables
 
 name-> callback_details
 
@@ -28,6 +31,7 @@ mint_address: text
 current_holder: text
 nft_data: json
 network: text
+refernece_address
 
 ## Getting Started
 

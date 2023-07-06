@@ -33,9 +33,9 @@ const CreateMerkle = (props: propsType) => {
         const validNetworks = ['devnet', 'mainnet-beta'];
         var errorOcc = false;
         try {
-            if (wAddress === '') throw new Error('NO_WADDRESS');
-            else if (validNetworks.includes(network) === false) throw new Error('INVALID_NETWORK');
-            else if (maxTokens < 0 || maxTokens > 64) throw new Error('TOO_MANY_TOKENS');
+            // if (wAddress === '') throw new Error('NO_WADDRESS');
+            if (validNetworks.includes(network) === false) throw new Error('INVALID_NETWORK');
+            else if (maxTokens < 0 || maxTokens > 1000000) throw new Error('TOO_MANY_TOKENS');
         } catch (error: any) {
             if (error.message === 'NO_WADDRESS') setMsg('Wallet Address cannot be empty');
             else if (error.message === 'INVALID_NETWORK') setMsg('Invalid Network Selected');
@@ -50,7 +50,7 @@ const CreateMerkle = (props: propsType) => {
                     url: '/api/create-merkle-tree',
                     method: 'POST',
                     data: {
-                        wallet_address: wAddress,
+                        // wallet_address: wAddress,
                         total_tokens: maxTokens,
                         network: network,
                     },
@@ -85,13 +85,13 @@ const CreateMerkle = (props: propsType) => {
                 Create Merkle Tree
             </Heading>
 
-            <FormControl mt="2%">
+            {/* <FormControl mt="2%">
                 <FormLabel fontWeight={'normal'}>Wallet address</FormLabel>
                 <Input type="text" value={wAddress} onChange={(e) => setWalletAddress(e.target.value)} />
                 <FormHelperText>Wallet Address with which this project was setup.</FormHelperText>
-            </FormControl>
-            <Flex mt="2%" flexDirection={{ base: 'column', md: 'row' }}>
-                <FormControl flex={1} mr={{ base: '0%', md: '5%' }}>
+            </FormControl> */}
+            <Flex mt="2%" flexDirection={{ base: 'column', md: 'column' }}>
+                <FormControl flex={1} mr={{ base: '0%', md: '0%' }}>
                     <FormLabel fontWeight={'normal'}>Network</FormLabel>
                     <Select value={network} onChange={(e) => setNetwork(e.target.value)}>
                         <option value="devnet" style={{ color: '#202020' }}>
@@ -105,11 +105,12 @@ const CreateMerkle = (props: propsType) => {
                     <FormHelperText>Select Solana Network Cluster</FormHelperText>
                 </FormControl>
 
-                <FormControl flex={1} mt={{ base: '2%', md: '0%' }}>
-                    <FormLabel fontWeight={'normal'}>No. of tokens To create</FormLabel>
+                <FormControl flex={1} mt={{ base: '2%', md: '2%' }}>
+                    <FormLabel fontWeight={'normal'}>Max NFTs to be Airdropped</FormLabel>
                     <Input
                         type="number"
-                        placeholder=""
+                        min={1}
+                        max={1000000}
                         value={maxTokens}
                         onChange={(e) => setMaxTokens(Number(e.target.value))}
                     />

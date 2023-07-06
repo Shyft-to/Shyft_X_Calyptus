@@ -40,10 +40,11 @@ import CreateNAirdrop from '../components/CreateNAirdrop';
 const Home: NextPage = () => {
     const [address, setAddress] = useState('');
     const [network, setNetwork] = useState('devnet');
+    const [version,setVersion] = useState("v3");
     const [allData, setAllData] = useState<any[]>([]);
-    const [opsComplete, setOpsComplete] = useState<'unloaded' | 'loading' | 'loaded'>('unloaded');
+    const [opsComplete, setOpsComplete] = useState<'unloaded' | 'loading' | 'loaded'>("unloaded");
 
-    const setUpMonitors = async (address: string, network: string) => {
+    const setUpMonitors = async (address: string, network: string, version:string) => {
         var mintList: any[] = [];
         setOpsComplete('loading');
         await axios
@@ -53,6 +54,7 @@ const Home: NextPage = () => {
                 data: {
                     cm_address: address,
                     network: network,
+                    version: version
                 },
             })
             .then((res) => {
@@ -73,25 +75,25 @@ const Home: NextPage = () => {
                 },
             })
             .then((res) => {
-                // if(res.data.success)
-                //     setOpsComplete(true);
+                if(res.data.success)
+                    setOpsComplete('loaded');
             })
             .catch((err) => console.log(err));
 
-        await axios
-            .request({
-                url: '/api/hello',
-                method: 'POST',
-                data: {
-                    reference_address: address,
-                    create_callbacks_on: mintList,
-                    network: network,
-                },
-            })
-            .then((res) => {
-                if (res.data.success) setOpsComplete('loaded');
-            })
-            .catch((err) => console.log(err));
+        // await axios
+        //     .request({
+        //         url: '/api/hello',
+        //         method: 'POST',
+        //         data: {
+        //             reference_address: address,
+        //             create_callbacks_on: mintList,
+        //             network: network,
+        //         },
+        //     })
+        //     .then((res) => {
+        //         if (res.data.success) setOpsComplete('loaded');
+        //     })
+        //     .catch((err) => console.log(err));
     };
 
     return (
@@ -135,7 +137,22 @@ const Home: NextPage = () => {
                                         onChange={(e) => setAddress(e.target.value)}
                                     />
                                 </FormControl>
-                                <FormControl w={{ base: '100%', md: '30%' }}>
+                                <FormControl w={{ base: '100%', md: '20%' }}>
+                                    <Select
+                                        value={version}
+                                        onChange={(e) => setVersion(e.target.value)}
+                                        variant="outline"
+                                        color={'white'}
+                                    >
+                                        <option style={{ color: '#fff', backgroundColor: '#ED64A6' }} value="v3">
+                                            v3
+                                        </option>
+                                        <option style={{ color: '#fff', backgroundColor: '#ED64A6' }} value="v2">
+                                            v2
+                                        </option>
+                                    </Select>
+                                </FormControl>
+                                <FormControl w={{ base: '100%', md: '20%' }}>
                                     <Select
                                         value={network}
                                         onChange={(e) => setNetwork(e.target.value)}
@@ -156,12 +173,12 @@ const Home: NextPage = () => {
                                         </option>
                                     </Select>
                                 </FormControl>
-                                <FormControl w={{ base: '100%', md: '30%' }}>
+                                <FormControl w={{ base: '100%', md: '20%' }}>
                                     <Button
                                         colorScheme={'gray'}
                                         w="100%"
                                         type={'button'}
-                                        onClick={() => setUpMonitors(address, network)}
+                                        onClick={() => setUpMonitors(address, network,version)}
                                     >
                                         Search
                                     </Button>
@@ -242,7 +259,7 @@ const Home: NextPage = () => {
                     justify={{ base: 'center', md: 'space-between' }}
                     align={{ base: 'center', md: 'center' }}
                 >
-                    <Text fontFamily={'customCursive'} fontSize={'lg'}>
+                    <Text fontFamily={'customCursive'} fontSize={'s'}>
                         Made with love ❤️ by Shyft & Calyptus
                     </Text>
                     <Stack direction={'row'} spacing={6}>

@@ -75,6 +75,7 @@ const CreateCompressedForms = (props:propsType) => {
                 <Input type="text" value={props.metaUri} onChange={(e) => props.setMetaUri(e.target.value)}/>
                 <FormHelperText>Metaplex Non-fungible Standard JSON file URL</FormHelperText>
             </FormControl>
+            <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"sm"} mt={2} fontFamily={"heading"}>To learn how to create NFT metadata, please visit <Link href='https://docs.shyft.to/start-hacking/storage#post-https-api.shyft.to-sol-v1-metadata-create' isExternal>https://docs.shyft.to</Link> <ExternalLinkIcon mx='2px' mt="-0.5" /></Text>
             {/* <FormControl mt="2%">
                 <FormLabel fontWeight={'normal'}>
                     Collection Address
@@ -85,7 +86,7 @@ const CreateCompressedForms = (props:propsType) => {
             
             <Stack mt={8} flexDirection={"column"}>
                 <Button fontFamily={"heading"} colorScheme='purple' onClick={() => props.setActiveStep(2)}>Select Holders to Drop</Button>
-                <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"sm"} mt={2} fontFamily={"heading"}>To find out more about Merkle Trees and their capacity, <Link href='https://docs.shyft.to/start-hacking/nft/compressed-nft#create-merkle-tree' isExternal>click here</Link>,or visit <Link href='https://docs.shyft.to' isExternal>SHYFT Docs</Link> <ExternalLinkIcon mx='2px' mt="-0.5" /></Text>
+                <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"sm"} mt={2} fontFamily={"heading"}>To find out more about Compressed NFTs,  <Link href='https://docs.shyft.to/start-hacking/nft/compressed-nft' isExternal>click here</Link>,or visit <Link href='https://docs.shyft.to' isExternal>SHYFT Docs</Link> <ExternalLinkIcon mx='2px' mt="-0.5" /></Text>
             </Stack>
         </>
     );

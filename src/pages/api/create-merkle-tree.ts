@@ -37,7 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             var total_tokens:number = 0;
             var fee_payer: string = "";
 
-            wallet_address = (typeof req.body.wallet_address === "string") ? req.body.wallet_address : '';
+            // wallet_address = (typeof req.body.wallet_address === "string") ? req.body.wallet_address : '';
+            wallet_address = process.env.NEXT_PUBLIC_KEY ?? "";
             total_tokens = (typeof req.body.total_tokens === "number") ? req.body.total_tokens : 0;
 
             // total_tokens = Array.isArray(req.body.create_callbacks_on) ? req.body.create_callbacks_on : [];
@@ -45,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
             const treeSpecs = getTreeSpecs(total_tokens);
 
-            if(total_tokens > 64)
+            if(total_tokens > 1000000)
                 throw new Error("TOO_MANY_TOKENS")
             
             var response_from_api:any = {};

@@ -13,9 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     try {
         var cm_address: string = '';
         var network: string = '';
+        var version: string = "";
 
         cm_address = typeof req.body.cm_address === 'string' ? req.body.cm_address : '';
         network = typeof req.body.network === 'string' ? req.body.network : 'mainnet-beta';
+        version = typeof req.body.version === 'string' ? req.body.version : 'v3';
 
         var shyftNetwork: Network = Network.Mainnet;
         if (network === 'mainnet-beta') shyftNetwork = Network.Mainnet;
@@ -26,11 +28,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         var cm_mints: any[] = [];
         var getMintsFromCandyMachine: string[];
 
+        const cm_version = (version === "v3")?CandyMachineProgram.V3:CandyMachineProgram.V2;
+    
         try {
             getMintsFromCandyMachine = await shyftClient.candyMachine.readMints({
                 network: shyftNetwork,
                 address: cm_address,
-                version: CandyMachineProgram.V3,
+                version: cm_version,
             });
         } catch (error) {
             throw Error('WRONG_ADDR');
