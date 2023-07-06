@@ -1,4 +1,4 @@
-import { Text, Flex, Box, Center, Stack, Image } from '@chakra-ui/react';
+import { Text, Flex, Box, Center, Stack, Image,Link, textDecoration } from '@chakra-ui/react';
 import { useState,useEffect } from 'react';
 import axios from 'axios';
 type paramType = {
@@ -58,52 +58,57 @@ const NftList = (props: paramType) => {
                 {nfts.map((nft:any) => 
                 <Box minW={'250px'} px={8} key={nft.id}>
                     <Center py={8}>
-                        <Box
-                            role={'group'}
-                            p={3}
-                            maxW={'250px'}
-                            w={'full'}
-                            bg={'gray.800'}
-                            boxShadow={'2xl'}
-                            rounded={'xl'}
-                            pos={'relative'}
-                            zIndex={1}
-                        >
+                        
                             <Box
-                                rounded={'lg'}
-                                mt={-1}
+                                role={'group'}
+                                p={3}
+                                maxW={'250px'}
+                                w={'full'}
+                                bg={'gray.800'}
+                                boxShadow={'2xl'}
+                                rounded={'xl'}
                                 pos={'relative'}
-                                height={'220px'}
-                                _after={{
-                                    transition: 'all .3s ease',
-                                    content: '""',
-                                    w: 'full',
-                                    h: 'full',
-                                    pos: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    backgroundImage: `url(${nft.nft_data.cached_image_uri})`,
-                                    filter: 'blur(5px)',
-                                    zIndex: -1,
-                                }}
-                                _groupHover={{
-                                    _after: {
-                                        filter: 'blur(20px)',
-                                    },
-                                }}
+                                zIndex={1}
+                                shadow="2px 2px 16px rgba(0,0,0,0.9)"
                             >
-                                <Image rounded={'lg'} height={230} width={282} objectFit={'cover'} src={nft.nft_data.cached_image_uri} alt='nft_image'/>
+                                <Link href={`https://translator.shyft.to/address/${nft.mint_address}?cluster=${nft.network}`} isExternal>
+                                    <Box
+                                        rounded={'lg'}
+                                        mt={-1}
+                                        pos={'relative'}
+                                        height={'220px'}
+                                        _after={{
+                                            transition: 'all .3s ease',
+                                            content: '""',
+                                            w: 'full',
+                                            h: 'full',
+                                            pos: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            backgroundImage: `url(${nft.nft_data.cached_image_uri})`,
+                                            filter: 'blur(5px)',
+                                            zIndex: -1,
+                                        }}
+                                        _groupHover={{
+                                            _after: {
+                                                filter: 'blur(20px)',
+                                            },
+                                        }}
+                                    >
+                                        <Image rounded={'lg'} height={230} width={282} objectFit={'cover'} src={nft.nft_data.cached_image_uri} alt='nft_image'/>
+                                    </Box>
+                                </Link>
+                                <Stack pt={10} pb={2} align={'center'}>
+                                    <Text color={'gray.400'} fontSize={'sm'}  fontFamily={"customHeading"}>
+                                        {nft.nft_data.name}
+                                    </Text>
+                                    {/* <Heading fontSize={'2xl'} fontFamily={'body'} fontWeight={500}>
+                                        Nice Chair, pink
+                                    </Heading> */}
+                                    
+                                </Stack>
                             </Box>
-                            <Stack pt={10} pb={2} align={'center'}>
-                                <Text color={'gray.500'} fontSize={'sm'} textTransform={'uppercase'}>
-                                    {nft.nft_data.name}
-                                </Text>
-                                {/* <Heading fontSize={'2xl'} fontFamily={'body'} fontWeight={500}>
-                                    Nice Chair, pink
-                                </Heading> */}
-                                
-                            </Stack>
-                        </Box>
+                        
                     </Center>
                 </Box>)}
                 
