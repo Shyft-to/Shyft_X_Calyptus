@@ -23,7 +23,7 @@ type propsType = {
 const CreateMerkle = (props: propsType) => {
     const [wAddress, setWalletAddress] = useState<string>('');
     const [network, setNetwork] = useState<string>('devnet');
-    const [maxTokens, setMaxTokens] = useState(0);
+    const [maxTokens, setMaxTokens] = useState(1);
     const [msg, setMsg] = useState<string>('');
 
     const [loading, setLoading] = useState<'loading' | 'success' | 'failed' | 'unloaded'>('unloaded');

@@ -75,25 +75,25 @@ const Home: NextPage = () => {
                 },
             })
             .then((res) => {
-                if(res.data.success)
-                    setOpsComplete('loaded');
+                // if(res.data.success)
+                //     setOpsComplete('loaded');
             })
             .catch((err) => console.log(err));
 
-        // await axios
-        //     .request({
-        //         url: '/api/hello',
-        //         method: 'POST',
-        //         data: {
-        //             reference_address: address,
-        //             create_callbacks_on: mintList,
-        //             network: network,
-        //         },
-        //     })
-        //     .then((res) => {
-        //         if (res.data.success) setOpsComplete('loaded');
-        //     })
-        //     .catch((err) => console.log(err));
+        await axios
+            .request({
+                url: '/api/hello',
+                method: 'POST',
+                data: {
+                    reference_address: address,
+                    create_callbacks_on: mintList,
+                    network: network,
+                },
+            })
+            .then((res) => {
+                if (res.data.success) setOpsComplete('loaded');
+            })
+            .catch((err) => console.log(err));
     };
 
     return (
@@ -259,10 +259,15 @@ const Home: NextPage = () => {
                     justify={{ base: 'center', md: 'space-between' }}
                     align={{ base: 'center', md: 'center' }}
                 >
-                    <Text fontFamily={'customCursive'} fontSize={'s'}>
+                    <Text fontFamily={'customCursive'} fontSize={'sm'}>
                         Made with love ❤️ by Shyft & Calyptus
                     </Text>
                     <Stack direction={'row'} spacing={6}>
+                        <Link href={'https://shyft.to/'} isExternal>
+                            <Box bg={'gray.700'} px={4} py={2} borderRadius={'md'}>
+                                <Image src="/shyft_logo.svg" alt="SHYFT" width={'86px'} />
+                            </Box>
+                        </Link>
                         <Link href={'https://calyptus.co/'} isExternal>
                             <Box bg={'whiteAlpha.900'} px={4} py={2} borderRadius={'md'}>
                                 <Image
@@ -272,11 +277,7 @@ const Home: NextPage = () => {
                                 />
                             </Box>
                         </Link>
-                        <Link href={'https://shyft.to/'} isExternal>
-                            <Box bg={'gray.700'} px={4} py={2} borderRadius={'md'}>
-                                <Image src="/shyft_logo.svg" alt="SHYFT" width={'86px'} />
-                            </Box>
-                        </Link>
+                        
                     </Stack>
                 </Container>
             </Box>

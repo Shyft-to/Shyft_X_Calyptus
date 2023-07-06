@@ -48,7 +48,7 @@ const CreateNAirdrop = (props: propsType) => {
     const [responseMerkle, setRespMerkle] = useState<string>('');
 
     useEffect(() => {
-        if(props.allData.length > 0 && allselectRan === false)
+        if(props.allData.length > 0)
             selectAll()
     }, [props.allData])
 
@@ -59,7 +59,7 @@ const CreateNAirdrop = (props: propsType) => {
             dataAllData.push(item.current_holder);
           });
         setSelectedHolders(dataAllData);
-        setAllSelectRan(true);
+        // setAllSelectRan(true);
     }
     
 
