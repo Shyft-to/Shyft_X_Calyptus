@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 const { error } = await supabase.from('monitor_mints').delete().gte('id', -1);
 
                 for (var i = 0; i < addresses_to_monitor.length; i++) {
-                    await new Promise((r) => setTimeout(r, 500)); //use this if you have a rate limited API key
+                    await new Promise((r) => setTimeout(r, 1000)); //use this if you have a rate limited API key
                     const eachMint: string = addresses_to_monitor[i];
 
                     var objectToBePushed = {};

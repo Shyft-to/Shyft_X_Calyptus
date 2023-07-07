@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         };
         var statusCode = 0;
         try {
-            console.log('------------Hello Called--------------');
+            console.log('------------Create Callback Called--------------');
             // console.log(req.body);
             var reference_address: string = '';
             var addresses_to_monitor: string[] = [];
