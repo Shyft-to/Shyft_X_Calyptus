@@ -10,7 +10,7 @@ type paramType = {
 
 const NftList = (props: paramType) => {
     const [nfts,setNfts] = useState([]);
-    const [loading,setLoading] = useState<'unloaded'| 'loading' | 'loaded'>('unloaded');
+    const [loading,setLoading] = useState<'unloaded'| 'loading' | 'loaded' |'error' >('unloaded');
     useEffect(() => {
         if(props.opsComplete === "loaded" && props.address && props.network)
         {
@@ -44,17 +44,17 @@ const NftList = (props: paramType) => {
             // Catch errors if any
             .catch((err) => {
                 console.warn(err);
-                
+                setLoading("error");
             });
         }
-        
     
-      
     }, [props.opsComplete])
     
 
     return (
         <div>
+            {loading === "loaded" && (nfts.length < 1) && <Center color={"whiteAlpha.700"}>No Tokens found</Center>}
+            {loading === "error" && <Center color={"whiteAlpha.700"}>Some Error occured</Center>}
             {nfts.length > 0 && <Flex color="white" justifyContent={{ base: 'center', md: 'space-around' }} flexWrap={'wrap'}>
                 {nfts.map((nft:any) => 
                 <Box minW={'250px'} px={8} key={nft.id}>
